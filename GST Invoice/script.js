@@ -437,10 +437,19 @@
             csvRows.push(['=======================================================================']);
             csvRows.push([]);
             csvRows.push(['Total Amount:', 'Rs. ' + formatIndianNumber(invoiceData.totalAmount), '', '', '', '(INR)']);
-            csvRows.push(['Amount in Words:', numberToWords(Math.floor(invoiceData.totalAmount))]);
             csvRows.push([]);
             csvRows.push(['Credit Terms:', invoiceData.creditTerms + ' Days']);
-            csvRows.push(['GST (5% RCM):', 'Rs. ' + formatIndianNumber(invoiceData.totalAmount * 0.05)]);
+            csvRows.push([]);
+            
+            // GST Details based on selected GST type
+            if (invoiceData.gstType === 'igst') {
+                csvRows.push(['IGST @18%:', 'Rs. ' + formatIndianNumber(invoiceData.igstAmount)]);
+            } else {
+                csvRows.push(['CGST @9%:', 'Rs. ' + formatIndianNumber(invoiceData.cgstAmount)]);
+                csvRows.push(['SGST @9%:', 'Rs. ' + formatIndianNumber(invoiceData.sgstAmount)]);
+            }
+            csvRows.push(['Grand Total (with GST):', 'Rs. ' + formatIndianNumber(invoiceData.grandTotalWithGST)]);
+            csvRows.push(['Amount in Words:', numberToWords(Math.floor(invoiceData.grandTotalWithGST))]);
             csvRows.push([]);
             csvRows.push(['=======================================================================']);
             csvRows.push(['', 'Thank you for your business!', '', '', '', '']);
