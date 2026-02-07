@@ -1,0 +1,1369 @@
+﻿
+        let entryCounter = 0;
+
+        // Number to words conversion
+        function numberToWords(num) {
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+
+            function convertLessThanThousand(n) {
+                if (n === 0) return '';
+                if (n < 10) return ones[n];
+                if (n < 20) return teens[n - 10];
+                if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 > 0 ? ' ' + ones[n % 10] : '');
+                return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 > 0 ? ' ' + convertLessThanThousand(n % 100) : '');
+            }
+
+            if (num === 0) return 'Zero Only';
+            
+            const crore = Math.floor(num / 10000000);
+            const lakh = Math.floor((num % 10000000) / 100000);
+            const thousand = Math.floor((num % 100000) / 1000);
+            const remainder = num % 1000;
+
+            let result = '';
+            
+            if (crore > 0) result += convertLessThanThousand(crore) + ' Crore ';
+            if (lakh > 0) result += convertLessThanThousand(lakh) + ' Lakh ';
+            if (thousand > 0) result += convertLessThanThousand(thousand) + ' Thousand ';
+            if (remainder > 0) result += convertLessThanThousand(remainder);
+
+            return result.trim() + ' Only';
+        }
+
+        // Format number with Indian comma system
+        function formatIndianNumber(num) {
+            const n = parseFloat(num).toFixed(2);
+            const parts = n.split('.');
+            const intPart = parts[0];
+            const decPart = parts[1];
+            
+            let lastThree = intPart.substring(intPart.length - 3);
+            const otherNumbers = intPart.substring(0, intPart.length - 3);
+            
+            if (otherNumbers !== '') {
+                lastThree = ',' + lastThree;
+            }
+            
+            const formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+            return formatted + '.' + decPart;
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const day = date.getDate();
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const month = months[date.getMonth()];
+            const year = date.getFullYear().toString().slice(-2);
+            return `${day}-${month}-${year}`;
+        }
+
+        // Add transport entry
+        function addTransportEntry() {
+            entryCounter++;
+            const container = document.getElementById('transportEntriesContainer');
+            const today = new Date().toISOString().split('T')[0];
+            
+            const entryHTML = `
+                <div class="transport-entry" id="entry-${entryCounter}">
+                    <div class="transport-entry-header">
+                        <span class="transport-entry-title">Transportation Entry #${entryCounter}</span>
+                        <button type="button" class="btn-remove-entry" onclick="removeTransportEntry(${entryCounter})">
+                            ✕ Remove
+                        </button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Transport Date *</label>
+                            <input type="date" class="transport-date" required value="${today}">
+                        </div>
+                        <div class="form-group">
+                            <label>Docket Number *</label>
+                            <input type="text" class="docket-number" required value="LP10297">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>From Location *</label>
+                            <input type="text" class="from-location" required value="TAURU">
+                        </div>
+                        <div class="form-group">
+                            <label>To Location *</label>
+                            <input type="text" class="to-location" required value="GHAZIPUR 6 POINT">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mode *</label>
+                            <select class="transport-mode" required>
+                                <option value="Road">Road</option>
+                                <option value="Rail">Rail</option>
+                                <option value="Air">Air</option>
+                                <option value="Sea">Sea</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Vehicle Type *</label>
+                            <input type="text" class="vehicle-type" required value="17FT">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Weight (Kg) *</label>
+                            <input type="number" class="weight" required value="3000">
+                        </div>
+                        <div class="form-group">
+                            <label>Vehicle Number *</label>
+                            <input type="text" class="vehicle-number" required value="HR6367143">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Freight Amount (₹) *</label>
+                            <input type="number" class="freight-amount" required value="75000" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" class="charges-checkbox" style="width: auto; margin: 0;">
+                                <span>Enable Detailed Charges</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="charges-section" style="display: none; margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 6px; border-left: 3px solid #2a5298;">
+                        <div style="font-weight: 600; color: #1e3c72; margin-bottom: 10px; font-size: 13px;">Detailed Charges</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Loading Charges (₹)</label>
+                                <input type="number" class="charge-loading" value="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Union Charges (₹)</label>
+                                <input type="number" class="charge-union" value="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>SLT Charges (₹)</label>
+                                <input type="number" class="charge-slt" value="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Detention Charges (₹)</label>
+                                <input type="number" class="charge-detention" value="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Labour Charges (₹)</label>
+                                <input type="number" class="charge-labour" value="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Overload Charges (₹)</label>
+                                <input type="number" class="charge-overload" value="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>ODC Charges (₹)</label>
+                                <input type="number" class="charge-odc" value="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Halting Charges (₹)</label>
+                                <input type="number" class="charge-halting" value="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Unloading Charges (₹)</label>
+                                <input type="number" class="charge-unloading" value="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <!-- Empty for alignment -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', entryHTML);
+            
+            // Add event listener for charges checkbox
+            const newEntry = document.getElementById(`entry-${entryCounter}`);
+            const chargesCheckbox = newEntry.querySelector('.charges-checkbox');
+            const chargesSection = newEntry.querySelector('.charges-section');
+            
+            chargesCheckbox.addEventListener('change', function() {
+                chargesSection.style.display = this.checked ? 'block' : 'none';
+                generateInvoice();
+            });
+            
+            generateInvoice();
+        }
+
+        // Remove transport entry
+        function removeTransportEntry(id) {
+            const entry = document.getElementById(`entry-${id}`);
+            if (entry) {
+                entry.remove();
+                generateInvoice();
+            }
+        }
+
+        // Set today's date as default
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('invoiceDate').value = today;
+            
+            // Auto-uppercase Client Name
+            const clientNameInput = document.getElementById('clientName');
+            clientNameInput.addEventListener('input', function(e) {
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.toUpperCase();
+                this.setSelectionRange(start, end);
+            });
+            
+            // GST Type radio button event listeners
+            const gstTypeRadios = document.querySelectorAll('input[name="gstType"]');
+            gstTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateGSTDisplay();
+                    generateInvoice();
+                });
+            });
+            
+            // Initialize GST display
+            updateGSTDisplay();
+            
+            // Add first transport entry by default
+            addTransportEntry();
+        });
+
+// Form submission handler - Combined CSV and Email
+document.getElementById('invoiceForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            
+            // Generate invoice and get the data
+            const invoiceData = generateInvoice();
+            
+            // 1. Download CSV
+            downloadCSV(invoiceData);
+
+            // 2. Send Email
+            await sendEmailWithInvoice();
+        });
+
+
+        // Auto-update on input change
+        document.getElementById('invoiceForm').addEventListener('input', function() {
+            generateInvoice();
+        });
+
+// ========================================
+// EMAIL FUNCTIONALITY
+// ========================================
+
+// Generate beautiful HTML email template
+function generateHTMLEmailTemplate(data) {
+    const {
+        clientName,
+        invoiceNumber,
+        invoiceDate,
+        invoiceType,
+        docketNumber,
+        refPoNo,
+        clientAddress,
+        clientStateName,
+        clientStateCode,
+        clientGST,
+        transportDetails,
+        openingKM,
+        closingKM,
+        totalDistance,
+        notes,
+        creditTerms,
+        grandTotal,
+        igstAmount,
+        cgstAmount,
+        sgstAmount,
+        grandTotalWithGST,
+        amountInWords,
+        gstType
+    } = data;
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice ${invoiceNumber}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f7fa; color: #2c3e50;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f7fa;">
+        <tr>
+            <td style="padding: 40px 20px;">
+                <!-- Main Container -->
+                <table role="presentation" style="max-width: 700px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: 2px;">INVOICE</h1>
+                            <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 16px; opacity: 0.95;">Logpro Supply Chain Solutions Pvt. Ltd.</p>
+                            <div style="margin-top: 15px; background: rgba(255, 255, 255, 0.15); padding: 8px 16px; border-radius: 20px; display: inline-block;">
+                                <span style="color: #ffffff; font-size: 14px;">#${invoiceNumber}</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Greeting -->
+                    <tr>
+                        <td style="padding: 30px 30px 20px 30px;">
+                            <p style="margin: 0; font-size: 16px; color: #2c3e50;">Dear <strong>${clientName}</strong>,</p>
+                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #64748b; line-height: 1.6;">Please find below the invoice details for your reference:</p>
+                        </td>
+                    </tr>
+
+                    <!-- Invoice Details Section -->
+                    <tr>
+                        <td style="padding: 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f8fafc; border-radius: 8px; overflow: hidden; border: 2px solid #e2e8f0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h2 style="margin: 0 0 15px 0; font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #6b7280; padding-bottom: 8px; display: inline-block;">Invoice Details</h2>
+                                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #64748b; width: 40%;">Invoice Type:</td>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">${invoiceType.toUpperCase()}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Invoice Number:</td>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">${invoiceNumber}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Invoice Date:</td>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">${invoiceDate}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Docket Number:</td>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">${docketNumber}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Reference PO No:</td>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">${refPoNo}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Bill To Section -->
+                    <tr>
+                        <td style="padding: 20px 30px 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f8fafc; border-radius: 8px; overflow: hidden; border-left: 4px solid #6b7280;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h2 style="margin: 0 0 15px 0; font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">Bill To</h2>
+                                        <p style="margin: 0 0 8px 0; font-size: 15px; color: #2c3e50; font-weight: 600;">${clientName}</p>
+                                        <p style="margin: 0 0 8px 0; font-size: 13px; color: #475569; line-height: 1.6;">${clientAddress.replace(/\n/g, '<br>')}</p>
+                                        <p style="margin: 0 0 8px 0; font-size: 13px; color: #475569;">State: ${clientStateName} (${clientStateCode})</p>
+                                        <div style="margin-top: 12px; background: #ffffff; padding: 8px 12px; border-radius: 6px; display: inline-block;">
+                                            <span style="font-size: 12px; color: #64748b;"><strong>GSTIN:</strong> ${clientGST}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Transportation Details -->
+                    <tr>
+                        <td style="padding: 20px 30px 0 30px;">
+                            <h2 style="margin: 0 0 15px 0; font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #6b7280; padding-bottom: 8px; display: inline-block;">Transportation Details</h2>
+                            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; font-size: 13px; color: #475569; line-height: 1.8; white-space: pre-line; border-left: 4px solid #6b7280;">
+${transportDetails}
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Distance Details -->
+                    <tr>
+                        <td style="padding: 15px 30px 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f8fafc; border: 2px solid #6b7280; border-radius: 8px; overflow: hidden;">
+                                <tr>
+                                    <td style="padding: 15px 20px;">
+                                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="padding: 5px 0; font-size: 13px; color: #6b7280; font-weight: 600; width: 33%; text-align: center;">
+                                                    Opening KM: <span style="font-size: 14px; color: #2c3e50;">${openingKM}</span>
+                                                </td>
+                                                <td style="padding: 5px 0; font-size: 13px; color: #6b7280; font-weight: 600; width: 33%; text-align: center;">
+                                                    Closing KM: <span style="font-size: 14px; color: #2c3e50;">${closingKM}</span>
+                                                </td>
+                                                <td style="padding: 5px 0; font-size: 13px; color: #6b7280; font-weight: 600; width: 33%; text-align: center;">
+                                                    Total: <span style="font-size: 14px; color: #2c3e50;">${totalDistance} km</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    ${notes ? `
+                    <!-- Notes -->
+                    <tr>
+                        <td style="padding: 15px 30px 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 8px;">
+                                <tr>
+                                    <td style="padding: 15px 20px;">
+                                        <p style="margin: 0 0 5px 0; font-size: 12px; color: #92400e; font-weight: 600; text-transform: uppercase;">Notes</p>
+                                        <p style="margin: 0; font-size: 13px; color: #78350f; line-height: 1.6;">${notes}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    ` : ''}
+
+                    <!-- Financial Summary -->
+                    <tr>
+                        <td style="padding: 30px 30px 0 30px;">
+                            <h2 style="margin: 0 0 15px 0; font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #6b7280; padding-bottom: 8px; display: inline-block;">Financial Summary</h2>
+                        </td>
+                    </tr>
+
+                    <!-- Total Amount -->
+                    <tr>
+                        <td style="padding: 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%); border-radius: 8px; overflow: hidden;">
+                                <tr>
+                                    <td style="padding: 20px 25px;">
+                                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="font-size: 15px; color: #ffffff; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Total Amount:</td>
+                                                <td style="font-size: 18px; color: #ffffff; font-weight: 700; text-align: right;">₹${formatIndianNumber(grandTotal)}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- GST Details -->
+                    <tr>
+                        <td style="padding: 15px 30px 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                                ${gstType === 'igst' ? `
+                                <tr style="background-color: #f8fafc;">
+                                    <td style="padding: 12px 20px; font-size: 13px; color: #475569; font-weight: 600; border-bottom: 1px solid #e2e8f0;">IGST @18%:</td>
+                                    <td style="padding: 12px 20px; font-size: 14px; color: #6b7280; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">₹${formatIndianNumber(igstAmount)}</td>
+                                </tr>
+                                ` : `
+                                <tr style="background-color: #f8fafc;">
+                                    <td style="padding: 12px 20px; font-size: 13px; color: #475569; font-weight: 600; border-bottom: 1px solid #e2e8f0;">CGST @9%:</td>
+                                    <td style="padding: 12px 20px; font-size: 14px; color: #6b7280; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">₹${formatIndianNumber(cgstAmount)}</td>
+                                </tr>
+                                <tr style="background-color: #f8fafc;">
+                                    <td style="padding: 12px 20px; font-size: 13px; color: #475569; font-weight: 600;">SGST @9%:</td>
+                                    <td style="padding: 12px 20px; font-size: 14px; color: #6b7280; font-weight: 600; text-align: right;">₹${formatIndianNumber(sgstAmount)}</td>
+                                </tr>
+                                `}
+                                <tr style="background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);">
+                                    <td style="padding: 20px 25px; font-size: 16px; color: #ffffff; font-weight: 700; text-transform: uppercase;">Grand Total (including GST):</td>
+                                    <td style="padding: 20px 25px; font-size: 28px; color: #ffffff; font-weight: 700; text-align: right;">₹${formatIndianNumber(grandTotalWithGST)}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Amount in Words -->
+                    <tr>
+                        <td style="padding: 15px 30px;">
+                            <div style="text-align: center; padding: 15px 20px; background-color: #f8fafc; font-size: 13px; color: #475569; font-style: italic; border-radius: 8px;">
+                                Amount in words: <strong>${amountInWords}</strong>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Payment Terms -->
+                    <tr>
+                        <td style="padding: 15px 30px 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f8fafc; border-left: 4px solid #6b7280; border-radius: 8px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h2 style="margin: 0 0 12px 0; font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">Payment Terms</h2>
+                                        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #475569; line-height: 2;">
+                                            <li>Credit Terms: <strong>${creditTerms} days</strong></li>
+                                            <li>Payment should be made by RTGS/NEFT or Cheque Only</li>
+                                            <li>If Payment not received within ${creditTerms} days, interest @ 24% P.A. will be charged</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Bank Details -->
+                    <tr>
+                        <td style="padding: 20px 30px 0 30px;">
+                            <h2 style="margin: 0 0 15px 0; font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #6b7280; padding-bottom: 8px; display: inline-block;">Bank Details</h2>
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f8fafc; border-radius: 8px; border-left: 4px solid #6b7280;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #64748b; width: 35%;">Bank Name:</td>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">Axis Bank Ltd.</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Account Name:</td>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">Logpro Supply Chain Solutions Pvt. Ltd</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Account Number:</td>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">924020023025269</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #64748b;">IFSC Code:</td>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">UTIB0000131</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Branch:</td>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">DLF Gurgaon, Haryana, Gurgaon - 122009</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Company Details -->
+                    <tr>
+                        <td style="padding: 20px 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f8fafc; border-radius: 8px;">
+                                <tr>
+                                    <td style="padding: 20px; text-align: center;">
+                                        <p style="margin: 0 0 8px 0; font-size: 15px; color: #6b7280; font-weight: 600;">Logpro Supply Chain Solutions Pvt. Ltd.</p>
+                                        <p style="margin: 0 0 5px 0; font-size: 12px; color: #64748b;">ar, GT Road, Delhi-110009 Delhi, State Code: 07</p>
+                                        <p style="margin: 0; font-size: 12px; color: #64748b;">GSTIN: 07AAECL2012L1ZO | PAN: DL2020PTC363325</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <div style="text-align: center; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+                                <p style="margin: 0 0 10px 0; font-size: 14px; color: #2c3e50;">Thank you for your business!</p>
+                                <p style="margin: 0; font-size: 13px; color: #64748b;">Please let us know if you have any questions.</p>
+                                <p style="margin: 15px 0 0 0; font-size: 12px; color: #64748b; font-style: italic;">Authorized Signatory<br>Logpro Supply Chain Solutions Pvt. Ltd.</p>
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `.trim();
+}
+
+
+async function sendEmailWithInvoice() {
+    // Hardcoded recipient email
+    const recipientEmail = "mohit.logpro@gmail.com";
+
+    // Validate required form fields
+    const invoiceNumber = document.getElementById('invoiceNumber').value;
+    const clientName = document.getElementById('clientName').value;
+
+    if (!invoiceNumber || invoiceNumber.trim() === '') {
+        alert('❌ Please fill in the Invoice Number before sending email.');
+        return;
+    }
+
+    if (!clientName || clientName.trim() === '') {
+        alert('❌ Please fill in the Client Name before sending email.');
+        return;
+    }
+
+    // Get form data with null checks
+    const invoiceDate = document.getElementById('invoiceDate')?.value || '';
+    const invoiceType = document.querySelector('input[name="invoiceType"]:checked')?.value || '';
+    const docketNumber = document.getElementById('docketNumber')?.value || '';
+    const refPoNo = document.getElementById('refPoNo')?.value || '';
+    const clientAddress = document.getElementById('clientAddress')?.value || '';
+    const clientStateCode = document.getElementById('clientStateCode')?.value || '';
+    const clientStateName = document.getElementById('clientStateName')?.value || '';
+    const clientGST = document.getElementById('clientGST')?.value || '';
+    const openingKM = document.getElementById('openingKM')?.value || '';
+    const closingKM = document.getElementById('closingKM')?.value || '';
+    const notes = document.getElementById('notes')?.value || '';
+    const creditTerms = document.getElementById('creditTerms')?.value || '';
+    const gstType = document.querySelector('input[name="gstType"]:checked')?.value || 'cgst_sgst';
+
+    // Calculate total distance from opening and closing KM
+    const openingKMNum = parseFloat(openingKM) || 0;
+    const closingKMNum = parseFloat(closingKM) || 0;
+    const totalDistance = closingKMNum > openingKMNum ? (closingKMNum - openingKMNum).toString() : '0';
+
+    // Get transportation entries
+    const entries = document.querySelectorAll('.transport-entry');
+    let transportDetails = '';
+
+    entries.forEach((entry, index) => {
+        const date = entry.querySelector('.transport-date')?.value || '';
+        const docket = entry.querySelector('.docket-number')?.value || '';
+        const from = entry.querySelector('.from-location')?.value || '';
+        const to = entry.querySelector('.to-location')?.value || '';
+        const mode = entry.querySelector('.transport-mode')?.value || '';
+        const vehicleType = entry.querySelector('.vehicle-type')?.value || '';
+        const weight = entry.querySelector('.weight')?.value || '';
+        const vehicle = entry.querySelector('.vehicle-number')?.value || '';
+        const freight = entry.querySelector('.freight-amount')?.value || '';
+
+        transportDetails += `
+Entry ${index + 1}:
+• Date: ${date}
+• Docket Number: ${docket}
+• Route: ${from} to ${to}
+• Transport Mode: ${mode}
+• Vehicle Type: ${vehicleType}
+• Weight: ${weight} tons
+• Vehicle Number: ${vehicle}
+• Freight Amount: ₹${formatIndianNumber(parseFloat(freight) || 0)}
+
+`;
+    });
+
+    // Calculate totals
+    let grandTotal = 0;
+    entries.forEach(entry => {
+        const freight = parseFloat(entry.querySelector('.freight-amount')?.value) || 0;
+        const chargesEnabled = entry.querySelector('.charges-checkbox')?.checked;
+
+        if (chargesEnabled) {
+            const loading = parseFloat(entry.querySelector('.charge-loading')?.value) || 0;
+            const union = parseFloat(entry.querySelector('.charge-union')?.value) || 0;
+            const slt = parseFloat(entry.querySelector('.charge-slt')?.value) || 0;
+            const detention = parseFloat(entry.querySelector('.charge-detention')?.value) || 0;
+            const labour = parseFloat(entry.querySelector('.charge-labour')?.value) || 0;
+            const overload = parseFloat(entry.querySelector('.charge-overload')?.value) || 0;
+            const odc = parseFloat(entry.querySelector('.charge-odc')?.value) || 0;
+            const halting = parseFloat(entry.querySelector('.charge-halting')?.value) || 0;
+            const unloading = parseFloat(entry.querySelector('.charge-unloading')?.value) || 0;
+
+            grandTotal += freight + loading + union + slt + detention + labour + overload + odc + halting + unloading;
+        } else {
+            grandTotal += freight;
+        }
+    });
+
+    // Calculate GST
+    let igstAmount = 0;
+    let cgstAmount = 0;
+    let sgstAmount = 0;
+    let grandTotalWithGST = grandTotal;
+
+    if (gstType === 'igst') {
+        igstAmount = grandTotal * 0.18;
+        grandTotalWithGST = grandTotal + igstAmount;
+    } else {
+        cgstAmount = grandTotal * 0.09;
+        sgstAmount = grandTotal * 0.09;
+        grandTotalWithGST = grandTotal + cgstAmount + sgstAmount;
+    }
+
+    // Create email subject
+    const subject = `Invoice ${invoiceNumber} - Logpro Supply Chain Solutions - ${invoiceDate}`;
+
+    // Generate HTML email body
+    const emailBodyHTML = generateHTMLEmailTemplate({
+        clientName,
+        invoiceNumber,
+        invoiceDate,
+        invoiceType,
+        docketNumber,
+        refPoNo,
+        clientAddress,
+        clientStateName,
+        clientStateCode,
+        clientGST,
+        transportDetails,
+        openingKM,
+        closingKM,
+        totalDistance,
+        notes,
+        creditTerms,
+        grandTotal,
+        igstAmount,
+        cgstAmount,
+        sgstAmount,
+        grandTotalWithGST,
+        amountInWords: numberToWords(Math.floor(grandTotalWithGST)),
+        gstType
+    });
+
+    // Send email via backend API
+    const API_URL = 'http://localhost:3000/api/send-email';
+
+    // Show loading indicator
+    const sendButton = document.querySelector('.btn-generate'); // Updated to use the main button
+    const originalButtonText = sendButton.innerHTML;
+    sendButton.disabled = true;
+    sendButton.innerHTML = '📧 Sending CSV + Email...';
+    sendButton.style.opacity = '0.6';
+    sendButton.style.cursor = 'not-allowed';
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                recipientEmail: recipientEmail,
+                subject: subject,
+                emailBody: emailBodyHTML,
+                senderName: 'Logpro Supply Chain Solutions Pvt. Ltd.'
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(`✅ Email sent successfully!\n\nRecipient: ${recipientEmail}\nSubject: ${subject}\n\nThe invoice has been delivered to the recipient's inbox.`);
+        } else {
+            throw new Error(result.error || 'Failed to send email');
+        }
+
+    } catch (error) {
+        console.error('Error sending email:', error);
+
+        // Check if backend is running
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            alert('❌ Cannot connect to email server!\n\nPlease ensure:\n1. Backend server is running (npm start in backend folder)\n2. Server is accessible at http://localhost:3000\n\nError: ' + error.message);
+        } else {
+            alert('❌ Failed to send email!\n\nError: ' + error.message + '\n\nPlease try again or contact support.');
+        }
+    } finally {
+        // Restore button state
+        sendButton.disabled = false;
+        sendButton.innerHTML = originalButtonText;
+        sendButton.style.opacity = '1';
+        sendButton.style.cursor = 'pointer';
+    }
+}
+
+        // ========================================
+        // CSV GENERATION AND DOWNLOAD
+        // ========================================
+        
+        function generateCSV(invoiceData) {
+            const csvRows = [];
+            
+            // ============================================================
+            // HEADER SECTION - Company Branding
+            // ============================================================
+            csvRows.push(['=======================================================================']);
+            csvRows.push(['', 'LOGPRO SUPPLY CHAIN SOLUTIONS PVT. LTD.']);
+            csvRows.push(['', 'INVOICE EXPORT']);
+            csvRows.push(['=======================================================================']);
+            csvRows.push(['Generated:', new Date().toLocaleString('en-IN', { dateStyle: 'full', timeStyle: 'short' })]);
+            csvRows.push([]);
+            
+            // ============================================================
+            // INVOICE INFORMATION
+            // ============================================================
+            csvRows.push(['-----------------------------------------------------------------------']);
+            csvRows.push(['|', 'INVOICE DETAILS', '', '', '', '']);
+            csvRows.push(['-----------------------------------------------------------------------']);
+            csvRows.push(['|', 'Invoice Type:', invoiceData.invoiceType + ' INVOICE']);
+            csvRows.push(['|', 'Invoice Number:', invoiceData.invoiceNumber]);
+            csvRows.push(['|', 'Invoice Date:', formatDateForCSV(invoiceData.invoiceDate)]);
+            csvRows.push(['|', 'Docket Number:', invoiceData.docketNumber]);
+            csvRows.push(['|', 'Ref PO Number:', invoiceData.refPoNo || 'N/A']);
+            csvRows.push(['-----------------------------------------------------------------------']);
+            csvRows.push([]);
+            
+            // ============================================================
+            // CLIENT INFORMATION
+            // ============================================================
+            csvRows.push(['-----------------------------------------------------------------------']);
+            csvRows.push(['|', 'CLIENT DETAILS', '', '', '', '']);
+            csvRows.push(['-----------------------------------------------------------------------']);
+            csvRows.push(['|', 'Client Name:', invoiceData.clientName]);
+            csvRows.push(['|', 'Address:', invoiceData.clientAddress.replace(/\n/g, ', ')]);
+            csvRows.push(['|', 'State:', invoiceData.clientStateName + ' (Code: ' + invoiceData.clientStateCode + ')']);
+            csvRows.push(['|', 'GST IN Number:', invoiceData.clientGST]);
+            csvRows.push(['-----------------------------------------------------------------------']);
+            csvRows.push([]);
+            
+            // ============================================================
+            // DISTANCE TRACKING (if applicable)
+            // ============================================================
+            if (invoiceData.openingKM > 0 || invoiceData.closingKM > 0) {
+                csvRows.push(['-----------------------------------------------------------------------']);
+                csvRows.push(['|', 'DISTANCE DETAILS', '', '', '', '']);
+                csvRows.push(['-----------------------------------------------------------------------']);
+                csvRows.push(['|', 'Opening KM:', formatIndianNumber(invoiceData.openingKM) + ' KM']);
+                csvRows.push(['|', 'Closing KM:', formatIndianNumber(invoiceData.closingKM) + ' KM']);
+                csvRows.push(['|', 'Total Distance Covered:', formatIndianNumber(invoiceData.totalDistance) + ' KM']);
+                csvRows.push(['-----------------------------------------------------------------------']);
+                csvRows.push([]);
+            }
+            
+            // ============================================================
+            // ADDITIONAL NOTES (if provided)
+            // ============================================================
+            if (invoiceData.notes && invoiceData.notes.trim()) {
+                csvRows.push(['-----------------------------------------------------------------------']);
+                csvRows.push(['|', 'NOTES', '', '', '', '']);
+                csvRows.push(['-----------------------------------------------------------------------']);
+                csvRows.push(['|', invoiceData.notes.replace(/\n/g, ' ')]);
+                csvRows.push(['-----------------------------------------------------------------------']);
+                csvRows.push([]);
+            }
+            
+            // ============================================================
+            // TRANSPORTATION DETAILS TABLE
+            // ============================================================
+            csvRows.push(['=======================================================================']);
+            csvRows.push(['', 'TRANSPORTATION DETAILS', '', '', '', '']);
+            csvRows.push(['=======================================================================']);
+            csvRows.push([]);
+            
+            // Determine which charge columns to include
+            const chargeColumns = [];
+            const hasAnyCharges = invoiceData.transports.some(t => 
+                t.loadingCharges || t.unionCharges || t.sltCharges || 
+                t.detentionCharges || t.labourCharges || t.overloadCharges || 
+                t.odcCharges || t.haltingCharges || t.unloadingCharges
+            );
+            
+            if (hasAnyCharges) {
+                if (invoiceData.transports.some(t => t.loadingCharges > 0)) chargeColumns.push('Loading');
+                if (invoiceData.transports.some(t => t.unionCharges > 0)) chargeColumns.push('Union');
+                if (invoiceData.transports.some(t => t.sltCharges > 0)) chargeColumns.push('SLT');
+                if (invoiceData.transports.some(t => t.detentionCharges > 0)) chargeColumns.push('Detention');
+                if (invoiceData.transports.some(t => t.labourCharges > 0)) chargeColumns.push('Labour');
+                if (invoiceData.transports.some(t => t.overloadCharges > 0)) chargeColumns.push('Overload');
+                if (invoiceData.transports.some(t => t.odcCharges > 0)) chargeColumns.push('ODC');
+                if (invoiceData.transports.some(t => t.haltingCharges > 0)) chargeColumns.push('Halting');
+                if (invoiceData.transports.some(t => t.unloadingCharges > 0)) chargeColumns.push('Unloading');
+            }
+            
+            // Transportation table headers with better formatting
+            const transportHeaders = [
+                '#', 'Date', 'Docket', 'From', 'To', 'Mode', 
+                'Vehicle Type', 'Weight (Kg)', 'Vehicle No', 'Freight (Rs.)'
+            ];
+            
+            if (chargeColumns.length > 0) {
+                chargeColumns.forEach(charge => transportHeaders.push(charge + ' (Rs.)'));
+            }
+            
+            transportHeaders.push('Total (Rs.)');
+            csvRows.push(transportHeaders);
+            
+            // Separator line
+            csvRows.push(new Array(transportHeaders.length).fill('---------------'));
+            
+            // Transportation entries
+            let grandTotal = 0;
+            invoiceData.transports.forEach((transport, index) => {
+                let lineTotal = parseFloat(transport.freight) || 0;
+                
+                const row = [
+                    index + 1,
+                    formatDateForCSV(transport.date),
+                    transport.docket,
+                    transport.from,
+                    transport.to,
+                    transport.mode,
+                    transport.vehicleType,
+                    formatIndianNumber(parseFloat(transport.weight)),
+                    transport.vehicle,
+                    formatIndianNumber(parseFloat(transport.freight))
+                ];
+                
+                // Add charge values if columns exist
+                if (hasAnyCharges) {
+                    const chargeMap = {
+                        'Loading': transport.loadingCharges,
+                        'Union': transport.unionCharges,
+                        'SLT': transport.sltCharges,
+                        'Detention': transport.detentionCharges,
+                        'Labour': transport.labourCharges,
+                        'Overload': transport.overloadCharges,
+                        'ODC': transport.odcCharges,
+                        'Halting': transport.haltingCharges,
+                        'Unloading': transport.unloadingCharges
+                    };
+                    
+                    chargeColumns.forEach(charge => {
+                        const val = parseFloat(chargeMap[charge]) || 0;
+                        row.push(val > 0 ? formatIndianNumber(val) : '-');
+                        lineTotal += val;
+                    });
+                }
+                
+                row.push(formatIndianNumber(lineTotal));
+                grandTotal += lineTotal;
+                csvRows.push(row);
+            });
+            
+            // Separator before totals
+            csvRows.push(new Array(transportHeaders.length).fill('---------------'));
+            
+            // Grand total row
+            const totalRow = new Array(transportHeaders.length).fill('');
+            totalRow[totalRow.length - 2] = 'GRAND TOTAL:';
+            totalRow[totalRow.length - 1] = 'Rs. ' + formatIndianNumber(grandTotal);
+            csvRows.push(totalRow);
+            
+            csvRows.push([]);
+            csvRows.push([]);
+            
+            // ============================================================
+            // PAYMENT SUMMARY
+            // ============================================================
+            csvRows.push(['=======================================================================']);
+            csvRows.push(['', 'PAYMENT SUMMARY', '', '', '', '']);
+            csvRows.push(['=======================================================================']);
+            csvRows.push([]);
+            csvRows.push(['Total Amount:', 'Rs. ' + formatIndianNumber(invoiceData.totalAmount), '', '', '', '(INR)']);
+            csvRows.push([]);
+            csvRows.push(['Credit Terms:', invoiceData.creditTerms + ' Days']);
+            csvRows.push([]);
+            
+            // GST Details based on selected GST type
+            if (invoiceData.gstType === 'igst') {
+                csvRows.push(['IGST @18%:', 'Rs. ' + formatIndianNumber(invoiceData.igstAmount)]);
+            } else {
+                csvRows.push(['CGST @9%:', 'Rs. ' + formatIndianNumber(invoiceData.cgstAmount)]);
+                csvRows.push(['SGST @9%:', 'Rs. ' + formatIndianNumber(invoiceData.sgstAmount)]);
+            }
+            csvRows.push(['Grand Total (with GST):', 'Rs. ' + formatIndianNumber(invoiceData.grandTotalWithGST)]);
+            csvRows.push(['Amount in Words:', numberToWords(Math.floor(invoiceData.grandTotalWithGST))]);
+            csvRows.push([]);
+            csvRows.push(['=======================================================================']);
+            csvRows.push(['', 'Thank you for your business!', '', '', '', '']);
+            csvRows.push(['=======================================================================']);
+            
+            // Convert to CSV string with UTF-8 BOM for Excel compatibility
+            const csvString = csvRows.map(row => 
+                row.map(cell => {
+                    // Escape quotes and wrap in quotes if contains comma, quote, or newline
+                    const cellStr = String(cell || '');
+                    if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                        return '"' + cellStr.replace(/"/g, '""') + '"';
+                    }
+                    return cellStr;
+                }).join(',')
+            ).join('\n');
+            
+            // Add BOM for better Excel UTF-8 support
+            return '\ufeff' + csvString;
+        }
+        
+        // Helper function to format date nicely for CSV
+        function formatDateForCSV(dateStr) {
+            const date = new Date(dateStr);
+            const day = String(date.getDate()).padStart(2, '0');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+        
+        function downloadCSV(invoiceData) {
+            const csv = generateCSV(invoiceData);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            // Create filename with invoice number and date
+            const filename = `Invoice_${invoiceData.invoiceNumber.replace(/\//g, '-')}_${invoiceData.invoiceDate}.csv`;
+            
+            if (navigator.msSaveBlob) { // IE 10+
+                navigator.msSaveBlob(blob, filename);
+            } else {
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Show success message
+            alert(`âœ… Invoice CSV downloaded successfully!\n\nFilename: ${filename}`);
+        }
+
+        // Update GST Display based on selected GST type
+        function updateGSTDisplay() {
+            const gstType = document.querySelector('input[name="gstType"]:checked').value;
+            const igstRow = document.querySelector('.gst-row:nth-child(1)');
+            const cgstRow = document.querySelector('.gst-row:nth-child(2)');
+            const sgstRow = document.querySelector('.gst-row:nth-child(3)');
+            
+            if (gstType === 'igst') {
+                // Show only IGST
+                igstRow.style.display = 'flex';
+                cgstRow.style.display = 'none';
+                sgstRow.style.display = 'none';
+            } else {
+                // Show CGST and SGST, hide IGST
+                igstRow.style.display = 'none';
+                cgstRow.style.display = 'flex';
+                sgstRow.style.display = 'flex';
+            }
+        }
+
+        function generateInvoice() {
+            console.log('generateInvoice() called');
+            
+            // Get form values
+            const invoiceNumber = document.getElementById('invoiceNumber').value;
+            const invoiceDate = document.getElementById('invoiceDate').value;
+            const docketNumber = document.getElementById('docketNumber').value;
+            const refPoNo = document.getElementById('refPoNo').value;
+            
+            const clientName = document.getElementById('clientName').value;
+            const clientAddress = document.getElementById('clientAddress').value;
+            const clientStateCode = document.getElementById('clientStateCode').value;
+            const clientStateName = document.getElementById('clientStateName').value;
+            const clientGST = document.getElementById('clientGST').value;
+            const notes = document.getElementById('notes').value;
+            const creditTerms = document.getElementById('creditTerms').value;
+            
+            // Get invoice type
+            const invoiceType = document.querySelector('input[name="invoiceType"]:checked').value;
+            
+            // Update invoice header info
+            document.getElementById('displayInvoiceTitle').textContent = invoiceType + ' INVOICE';
+            document.getElementById('displayInvoiceNumber2').textContent = invoiceNumber;
+            document.getElementById('displayInvoiceDate').textContent = formatDate(invoiceDate);
+            document.getElementById('displayRefPoNo').textContent = refPoNo.trim() !== '' ? refPoNo : 'NA';
+            document.getElementById('displayDocketNumber').textContent = docketNumber;
+            
+            document.getElementById('displayClientName').textContent = clientName;
+            document.getElementById('displayClientAddress').textContent = clientAddress;
+            document.getElementById('displayClientStateCode').textContent = clientStateCode;
+            document.getElementById('displayClientStateName').textContent = clientStateName;
+            document.getElementById('displayClientGST').textContent = clientGST;
+            
+            // Get all transport entries
+            const entries = document.querySelectorAll('.transport-entry');
+            console.log('Found transport entries:', entries.length);
+            const tableBody = document.getElementById('transportTableBody');
+            tableBody.innerHTML = '';
+            
+            let grandTotal = 0;
+            
+            // Get Opening KM and Closing KM from standalone fields
+            const openingKM = parseFloat(document.getElementById('openingKM').value) || 0;
+            const closingKM = parseFloat(document.getElementById('closingKM').value) || 0;
+            const totalDistance = closingKM - openingKM;
+            
+            // First pass: Detect which charge columns have values across all entries
+            const chargeTypes = {
+                'Loading': { key: 'loading', total: 0, hasValue: false },
+                'Union': { key: 'union', total: 0, hasValue: false },
+                'SLT': { key: 'slt', total: 0, hasValue: false },
+                'Detention': { key: 'detention', total: 0, hasValue: false },
+                'Labour': { key: 'labour', total: 0, hasValue: false },
+                'Overload': { key: 'overload', total: 0, hasValue: false },
+                'ODC': { key: 'odc', total: 0, hasValue: false },
+                'Halting': { key: 'halting', total: 0, hasValue: false },
+                'Unloading': { key: 'unloading', total: 0, hasValue: false }
+            };
+            
+            // Scan all entries to detect which charges are used
+            const entryData = [];
+            entries.forEach((entry, index) => {
+                const data = {
+                    transportDate: entry.querySelector('.transport-date').value,
+                    docketNumber: entry.querySelector('.docket-number') ? entry.querySelector('.docket-number').value : '',
+                    fromLocation: entry.querySelector('.from-location').value,
+                    toLocation: entry.querySelector('.to-location').value,
+                    transportMode: entry.querySelector('.transport-mode').value,
+                    vehicleType: entry.querySelector('.vehicle-type').value,
+                    weight: parseFloat(entry.querySelector('.weight').value) || 0,
+                    vehicleNumber: entry.querySelector('.vehicle-number').value,
+                    charges: {}
+                };
+                
+                const chargesEnabled = entry.querySelector('.charges-checkbox')?.checked;
+                
+                // Get freight amount (always part of calculation, not a separate column)
+                const freightAmount = parseFloat(entry.querySelector('.freight-amount').value) || 0;
+                data.freightAmount = freightAmount;
+                
+                if (chargesEnabled) {
+                    // Get all charge values
+                    const loading = parseFloat(entry.querySelector('.charge-loading')?.value) || 0;
+                    const union = parseFloat(entry.querySelector('.charge-union')?.value) || 0;
+                    const slt = parseFloat(entry.querySelector('.charge-slt')?.value) || 0;
+                    const detention = parseFloat(entry.querySelector('.charge-detention')?.value) || 0;
+                    const labour = parseFloat(entry.querySelector('.charge-labour')?.value) || 0;
+                    const overload = parseFloat(entry.querySelector('.charge-overload')?.value) || 0;
+                    const odc = parseFloat(entry.querySelector('.charge-odc')?.value) || 0;
+                    const halting = parseFloat(entry.querySelector('.charge-halting')?.value) || 0;
+                    const unloading = parseFloat(entry.querySelector('.charge-unloading')?.value) || 0;
+                    
+                    data.charges['loading'] = loading;
+                    data.charges['union'] = union;
+                    data.charges['slt'] = slt;
+                    data.charges['detention'] = detention;
+                    data.charges['labour'] = labour;
+                    data.charges['overload'] = overload;
+                    data.charges['odc'] = odc;
+                    data.charges['halting'] = halting;
+                    data.charges['unloading'] = unloading;
+                    
+                    // Mark which charges have values
+                    if (loading > 0) chargeTypes['Loading'].hasValue = true;
+                    if (union > 0) chargeTypes['Union'].hasValue = true;
+                    if (slt > 0) chargeTypes['SLT'].hasValue = true;
+                    if (detention > 0) chargeTypes['Detention'].hasValue = true;
+                    if (labour > 0) chargeTypes['Labour'].hasValue = true;
+                    if (overload > 0) chargeTypes['Overload'].hasValue = true;
+                    if (odc > 0) chargeTypes['ODC'].hasValue = true;
+                    if (halting > 0) chargeTypes['Halting'].hasValue = true;
+                    if (unloading > 0) chargeTypes['Unloading'].hasValue = true;
+                    
+                    // Add to totals
+                    chargeTypes['Loading'].total += loading;
+                    chargeTypes['Union'].total += union;
+                    chargeTypes['SLT'].total += slt;
+                    chargeTypes['Detention'].total += detention;
+                    chargeTypes['Labour'].total += labour;
+                    chargeTypes['Overload'].total += overload;
+                    chargeTypes['ODC'].total += odc;
+                    chargeTypes['Halting'].total += halting;
+                    chargeTypes['Unloading'].total += unloading;
+                }
+                
+                // Calculate line total
+                let lineTotal = freightAmount;
+                if (chargesEnabled) {
+                    lineTotal += (data.charges['loading'] || 0) + (data.charges['union'] || 0) + (data.charges['slt'] || 0) +
+                                 (data.charges['detention'] || 0) + (data.charges['labour'] || 0) + (data.charges['overload'] || 0) +
+                                 (data.charges['odc'] || 0) + (data.charges['halting'] || 0) + (data.charges['unloading'] || 0);
+                }
+                
+                data.lineTotal = lineTotal;
+                grandTotal += lineTotal;
+                entryData.push(data);
+            });
+            
+            // Build active charge columns list
+            const activeChargeColumns = [];
+            Object.keys(chargeTypes).forEach(chargeName => {
+                if (chargeTypes[chargeName].hasValue) {
+                    activeChargeColumns.push(chargeName);
+                }
+            });
+            
+            // Get GST type for calculations (default to IGST if not found)
+            const gstTypeElement = document.querySelector('input[name="gstType"]:checked');
+            const gstType = gstTypeElement ? gstTypeElement.value : 'igst';
+            
+            // Calculate GST totals (not per-line, just overall)
+            let totalIGST = 0;
+            let totalCGST = 0;
+            let totalSGST = 0;
+            let grandTotalWithGST = 0;
+            
+            if (gstType === 'igst') {
+                totalIGST = grandTotal * 0.18;
+                grandTotalWithGST = grandTotal + totalIGST;
+            } else {
+                totalCGST = grandTotal * 0.09;
+                totalSGST = grandTotal * 0.09;
+                grandTotalWithGST = grandTotal + totalCGST + totalSGST;
+            }
+            
+            // Update table header dynamically (no GST columns)
+            const table = document.querySelector('.transport-table');
+            const thead = table.querySelector('thead');
+            let headerHTML = '<tr>';
+            headerHTML += '<th>Description</th>';
+            headerHTML += '<th>Date</th>';
+            headerHTML += '<th>From</th>';
+            headerHTML += '<th>To</th>';
+            headerHTML += '<th>Mode</th>';
+            headerHTML += '<th>Vehicle Type</th>';
+            headerHTML += '<th>Vehicle No</th>';
+            headerHTML += '<th>Weight (Kg)</th>';
+            
+            // Add dynamic charge columns
+            if (activeChargeColumns.length > 0) {
+                activeChargeColumns.forEach(chargeName => {
+                    headerHTML += `<th>${chargeName} Charges</th>`;
+                });
+            } else {
+                // If no charges, show placeholder
+                headerHTML += '<th>Other Charges</th>';
+            }
+            
+            headerHTML += '<th>Total Taxable Value</th>';
+            headerHTML += '</tr>';
+            thead.innerHTML = headerHTML;
+            
+            // Build table rows with dynamic columns (no GST columns)
+            entryData.forEach((data, index) => {
+                let row = '<tr>';
+                row += `<td>Transportation Charges ${entries.length > 1 ? '#' + (index + 1) : ''}</td>`;
+                row += `<td>${formatDate(data.transportDate)}</td>`;
+                row += `<td>${data.fromLocation}</td>`;
+                row += `<td>${data.toLocation}</td>`;
+                row += `<td>${data.transportMode}</td>`;
+                row += `<td>${data.vehicleType}</td>`;
+                row += `<td>${data.vehicleNumber}</td>`;
+                row += `<td>${formatIndianNumber(data.weight)}</td>`;
+                
+                // Add dynamic charge column values
+                if (activeChargeColumns.length > 0) {
+                    activeChargeColumns.forEach(chargeName => {
+                        const chargeKey = chargeTypes[chargeName].key;
+                        const value = data.charges[chargeKey] || 0;
+                        row += `<td class="amount-cell">${value > 0 ? formatIndianNumber(value) : '-'}</td>`;
+                    });
+                } else {
+                    // If no charges, show placeholder
+                    row += '<td class="amount-cell">-</td>';
+                }
+                
+                row += `<td class="amount-cell">${formatIndianNumber(data.lineTotal)}</td>`;
+                row += '</tr>';
+                
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+            
+            // Update footer with dynamic totals and GST rows
+            const tfoot = table.querySelector('tfoot');
+            let footerHTML = '';
+            
+            // Calculate the number of columns for proper colspan
+            let totalColumns = 9; // base columns
+            if (activeChargeColumns.length > 0) {
+                totalColumns += activeChargeColumns.length;
+            }
+            
+            // Single Total row (with GST included)
+            footerHTML += '<tr class="total-row">';
+            const chargeColspan = activeChargeColumns.length > 0 ? activeChargeColumns.length : 1;
+            footerHTML += `<td colspan="${8 + chargeColspan}" style="text-align: right; font-weight: bold; padding: 8px;">Total</td>`;
+            footerHTML += `<td class="amount-cell" style="font-weight: bold; padding: 8px;" id="displayTotalAmount">${formatIndianNumber(grandTotal)}</td>`;
+            footerHTML += '</tr>';
+            
+            tfoot.innerHTML = footerHTML;
+            
+            // Update distance summary
+            document.getElementById('displayOpeningKM').textContent = formatIndianNumber(openingKM) + ' KM';
+            document.getElementById('displayClosingKM').textContent = formatIndianNumber(closingKM) + ' KM';
+            document.getElementById('displayTotalDistance').textContent = formatIndianNumber(totalDistance) + ' KM';
+            
+            // Show/hide distance summary section based on values
+            const distanceSummarySection = document.getElementById('distanceSummarySection');
+            if (openingKM > 0 || closingKM > 0) {
+                distanceSummarySection.style.display = 'flex';
+            } else {
+                distanceSummarySection.style.display = 'none';
+            }
+            
+            // Update notes section
+            const notesSection = document.getElementById('notesSection');
+            if (notes && notes.trim() !== '') {
+                document.getElementById('displayNotes').textContent = notes;
+                notesSection.style.display = 'flex';
+            } else {
+                notesSection.style.display = 'none';
+            }
+            
+            // Note: GST is now calculated in the table generation above
+            // Update GST displays in the summary section below the table
+            document.getElementById('displayIGST').textContent = formatIndianNumber(totalIGST);
+            document.getElementById('displayCGST').textContent = formatIndianNumber(totalCGST);
+            document.getElementById('displaySGST').textContent = formatIndianNumber(totalSGST);
+            document.getElementById('displayGrandTotal').textContent = formatIndianNumber(grandTotalWithGST);
+            
+            const amountInWords = numberToWords(Math.floor(grandTotalWithGST));
+            document.getElementById('displayAmountWords').textContent = amountInWords;
+            
+            // Update Credit Terms
+            document.getElementById('displayCreditTerms').textContent = creditTerms;
+
+            const invoicePayload = {
+                timestamp: new Date().toISOString(), 
+                invoiceType,
+                invoiceNumber,
+                invoiceDate,
+                docketNumber,
+                refPoNo,
+                clientName,
+                clientAddress,
+                clientStateCode,
+                clientStateName,
+                clientGST,
+                openingKM,
+                closingKM,
+                totalDistance,
+                notes,
+                creditTerms,
+                totalAmount: grandTotal,
+                gstType: gstType,
+                igstAmount: igstAmount,
+                cgstAmount: cgstAmount,
+                sgstAmount: sgstAmount,
+                grandTotalWithGST: grandTotalWithGST,
+                transports: [...entries].map(entry => {
+                    const chargesEnabled = entry.querySelector('.charges-checkbox')?.checked;
+                    const transportData = {
+                        date: entry.querySelector('.transport-date').value,
+                        docket: entry.querySelector('.docket-number').value,
+                        from: entry.querySelector('.from-location').value,
+                        to: entry.querySelector('.to-location').value,
+                        mode: entry.querySelector('.transport-mode').value,
+                        vehicleType: entry.querySelector('.vehicle-type').value,
+                        weight: entry.querySelector('.weight').value,
+                        vehicle: entry.querySelector('.vehicle-number').value,
+                        freight: entry.querySelector('.freight-amount').value
+                    };
+                    
+                    if (chargesEnabled) {
+                        transportData.loadingCharges = entry.querySelector('.charge-loading')?.value || 0;
+                        transportData.unionCharges = entry.querySelector('.charge-union')?.value || 0;
+                        transportData.sltCharges = entry.querySelector('.charge-slt')?.value || 0;
+                        transportData.detentionCharges = entry.querySelector('.charge-detention')?.value || 0;
+                        transportData.labourCharges = entry.querySelector('.charge-labour')?.value || 0;
+                        transportData.overloadCharges = entry.querySelector('.charge-overload')?.value || 0;
+                        transportData.odcCharges = entry.querySelector('.charge-odc')?.value || 0;
+                        transportData.haltingCharges = entry.querySelector('.charge-halting')?.value || 0;
+                        transportData.unloadingCharges = entry.querySelector('.charge-unloading')?.value || 0;
+                    }
+                    
+                    return transportData;
+                })
+            };
+            
+            // Return the invoice payload for CSV download
+            return invoicePayload;
+        }
+    

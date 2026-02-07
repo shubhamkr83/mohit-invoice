@@ -148,7 +148,8 @@ Andheri West, Mumbai, Suburban, Maharashtra, 400053</textarea>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-generate">📥 Download Invoice CSV</button>
+                <!-- <button type="button" class="btn-preview" onclick="generateInvoice()">👁️ Generate Invoice Preview</button> -->
+                <button type="submit" class="btn-generate">📥 Download CSV and Send Email</button>
                 <button type="button" class="btn-print" onclick="window.print()">🖨️ Print Invoice</button>
             </form>
         </div>
@@ -158,75 +159,80 @@ Andheri West, Mumbai, Suburban, Maharashtra, 400053</textarea>
             <div class="invoice-container" id="invoiceContainer">
                 <!-- Header -->
                 <div class="invoice-header">
-                    <!-- <div class="company-logo">
-                        <img src="https://ik.imagekit.io/bs23dl8kis/Mohit/logpro.png" alt="LOGpro Logo" style="height: 70px; width: 200px;">
-                    </div> -->
-                    <div class="invoice-title-section">
-                        <div class="invoice-title" id="displayInvoiceTitle">TAX INVOICE</div>
-                    </div>
+                    <div class="invoice-title" id="displayInvoiceTitle">TAX INVOICE</div>
                 </div>
 
                 <!-- Company Details -->
                 <div class="company-details">
-                    <div class="company-info">
-                        <div class="company-name">M/s. Logpro Supply Chain Solutions Pvt. Ltd.</div>
-                        <div class="company-address">
-                            B-9, Sardar Nagar, GT Road, Delhi-110009<br>
-                            State Name: Delhi, State Code: 07
-                        </div>
-                        <div class="company-codes">
-                            <span class="code-item"><span class="code-label">SAC Code:</span> 996791</span>
-                            <span class="code-item"><span class="code-label">CIN No:</span> U63030DL2020PTC363325</span>
-                            <span class="code-item"><span class="code-label">GSTIN:</span> 07AAECL2012L1ZO</span>
-                            <span class="code-item"><span class="code-label">PAN No:</span> AAECL2012L</span>
-                        </div>
+                    <div class="company-name">M/s. Logpro Supply Chain Solutions Pvt. Ltd.</div>
+                    <div class="company-address">
+                        B-9, Sardar Nagar, GT Road, Delhi-110009 State Name: Delhi, State Code- 07
                     </div>
+                    <div class="company-sac">SAC Code - 996812</div>
                 </div>
 
                 <!-- Invoice Meta Info -->
                 <div class="invoice-meta">
-                    <div class="meta-item">
-                        <div class="meta-label">Invoice Number</div>
-                        <div class="meta-value" id="displayInvoiceNumber2">LPPL/25-26/0831</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Invoice Date</div>
-                        <div class="meta-value" id="displayInvoiceDate">28-Jan-26</div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">Ref Po No</div>
-                        <div class="meta-value" id="displayRefPoNo">LP10297</div>
-                    </div>
+                    <table class="meta-table">
+                        <tr>
+                            <td><span class="meta-label">CIN No -</span>U63030DL2020PTC363325</td>
+                            <td><span class="meta-label">GSTIN:</span> 07AAECL2012L1ZQ</td>
+                            <td><span class="meta-label">Pan No. :</span> AAECL2012L</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><span class="meta-label">INVOICE NUMBER -</span> <span id="displayInvoiceNumber2">LPPL/25-26/0831</span></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><span class="meta-label">INVOICE DATE :</span> <span id="displayInvoiceDate">31-Jan-26</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="meta-label">REF PO NO :</span> <span id="displayRefPoNo">NA</span></td>
+                            <td colspan="2"><span class="meta-label">DOCKET NO :</span> <span id="displayDocketNumber">LP10297</span></td>
+                        </tr>
+                    </table>
                 </div>
 
                 <!-- Bill To Section -->
                 <div class="bill-to-section">
-                    <div class="section-title">Bill To</div>
-                    <div class="bill-to-content">
-                        <div class="client-name" id="displayClientName">INSTALLCO WIFY TECHNOLOGY PRIVATE LIMITED</div>
-                        <div class="client-address" id="displayClientAddress">7th Floor, D-704 and R-702, Remi Bizcourt,
-Veera Desai Road, Off New Link Road,
-Andheri West, Mumbai, Suburban, Maharashtra, 400053</div>
-                        <div style="margin-top: 10px; font-size: 12px; color: #64748b;">
-                            State Code: <span id="displayClientStateCode">27</span>, State Name: <span id="displayClientStateName">Maharashtra</span>
-                        </div>
-                        <div class="client-gst">
-                            <span class="journey-label">GST IN No:</span> <span id="displayClientGST">27AAFCI3119N1ZC</span>
-                        </div>
+                    <div class="section-title">Bill To,</div>
+                    <div class="client-name" id="displayClientName">AFRZEN PRIVATE LIMITED</div>
+                    <div class="client-info">
+                        <div><span class="info-label">Flat No.- 5, Building No- 32/302, GLOBAL BUSINESS SQUARE</span></div>
+                        <div class="client-address" id="displayClientAddress">Sector 44 Road, Gurugram, Locality : Sector 44,
+Gurugram, Haryana, Gurgaon - Gurugram
+Haryana, Pin - 122003</div>
+                        <div><span class="info-label">State:</span> <span id="displayClientStateName">Haryana</span> (<span id="displayClientStateCode">06</span>)</div>
+                        <div><span class="info-label">GSTIN No:</span> <span id="displayClientGST">06ABBCA2050B1ZM</span></div>
                     </div>
                 </div>
 
-                <!-- Transportation Details -->
+                <!-- Transportation Details Table -->
                 <div class="transportation-section">
-                    <div class="section-title">Transportation Details</div>
-                    
                     <table class="transport-table">
-                        <thead id="transportTableHead">
-                            <!-- Table headers will be added here dynamically -->
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Date</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Mode</th>
+                                <th>Vehicle Type</th>
+                                <th>Vehicle No</th>
+                                <th>Weight (Kg)</th>
+                                <th>Other Charges</th>
+                                <th>Total Taxable Value</th>
+                            </tr>
                         </thead>
                         <tbody id="transportTableBody">
                             <!-- Transport rows will be added here dynamically -->
                         </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="8" style="text-align: right; font-weight: bold; padding: 8px;">Total</td>
+                                <td class="amount-cell" style="font-weight: bold; padding: 8px;" id="totalCharges">-</td>
+                                <td class="amount-cell" style="font-weight: bold; padding: 8px;" id="displayTotalAmount">0.00</td>
+                            </tr>
+                        </tfoot>
                     </table>
 
                     <!-- Distance Summary Box -->
@@ -246,79 +252,73 @@ Andheri West, Mumbai, Suburban, Maharashtra, 400053</div>
                     </div>
 
                     <!-- Notes Section -->
-                    <div class="distance-summary" id="notesSection" style="display: none; padding: 12px 20px;">
-                        <span class="distance-label" style="margin-right: 8px;">Notes:</span>
-                        <span id="displayNotes" style="font-size: 13px; color: #475569; line-height: 1; white-space: pre-wrap;"></span>
+                    <div class="distance-summary" id="notesSection" style="display: none; padding: 8px 10px;">
+                        <span class="distance-label" style="margin-right: 5px;">Notes:</span>
+                        <span id="displayNotes" style="font-size: 11px; color: #000000; line-height: 1; white-space: pre-wrap;"></span>
                     </div>
                 </div>
 
-                <!-- Total Section -->
-                <div class="total-section">
-                    <div class="total-label">Total Amount</div>
-                    <div class="total-amount">₹ <span id="displayTotalAmount">0.00</span></div>
-                </div>
-
-                <!-- GST Calculations -->
-                <div class="gst-section">
-                    <div class="gst-row">
-                        <div class="gst-label">IGST @18%</div>
-                        <div class="gst-amount">₹ <span id="displayIGST">0.00</span></div>
+                <!-- GST Calculation Section -->
+                <div class="gst-section" style="max-width: 400px; margin: 20px auto 0 auto; background: #f8fafc; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0;">
+                    <div class="gst-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                        <span style="color: #475569; font-size: 14px; font-weight: 500;">IGST @18%:</span>
+                        <span style="color: #1e3c72; font-size: 14px; font-weight: 600;">₹ <span id="displayIGST">0.00</span></span>
                     </div>
-                    <div class="gst-row">
-                        <div class="gst-label">CGST @9%</div>
-                        <div class="gst-amount">₹ <span id="displayCGST">0.00</span></div>
+                    <div class="gst-row" style="display: none; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                        <span style="color: #475569; font-size: 14px; font-weight: 500;">CGST @9%:</span>
+                        <span style="color: #1e3c72; font-size: 14px; font-weight: 600;">₹ <span id="displayCGST">0.00</span></span>
                     </div>
-                    <div class="gst-row">
-                        <div class="gst-label">SGST @9%</div>
-                        <div class="gst-amount">₹ <span id="displaySGST">0.00</span></div>
+                    <div class="gst-row" style="display: none; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                        <span style="color: #475569; font-size: 14px; font-weight: 500;">SGST @9%:</span>
+                        <span style="color: #1e3c72; font-size: 14px; font-weight: 600;">₹ <span id="displaySGST">0.00</span></span>
                     </div>
-                    <div class="gst-total-row">
-                        <div class="gst-total-label">Grand Total</div>
-                        <div class="gst-total-amount">₹ <span id="displayGrandTotal">0.00</span></div>
+                    <div class="grand-total-row" style="display: flex; justify-content: space-between; padding: 15px 0; margin-top: 10px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); margin: 10px -20px -20px -20px; padding: 20px; border-radius: 0 0 8px 8px;">
+                        <span style="color: #ffffff; font-size: 16px; font-weight: 700; text-transform: uppercase;">Grand Total:</span>
+                        <span style="color: #ffffff; font-size: 20px; font-weight: 700;">₹ <span id="displayGrandTotal">0.00</span></span>
                     </div>
                 </div>
 
                 <div class="amount-words">
-                    Amount in words: <span id="displayAmountWords">Zero Only</span>
+                    Amount in words- <span id="displayAmountWords">Four Lakh Forty Thousand Only</span>
                 </div>
 
                 <!-- Payment Terms -->
                 <div class="payment-terms">
-                    <div class="section-title">Payment Terms</div>
-                    <div class="terms-list">
-                        <ol>
-                            <li>Payment should be made by RTGS/NEFT or Cheque Only.</li>
-                            <li>If Payment not received within <span id="displayCreditTerms"></span> days, interest @ 24% P.A. will be charged.</li>
-                        </ol>
-                    </div> 
+                    <div class="section-title">PAYMENT TERMS</div>
+                    <ol>
+                        <li>Payment should be made by RTGS/NEFT or Cheque Only.</li>
+                        <li>If Payment not received within 15 days, interest @ 24% P.A. will be charged.</li>
+                        <li>GST payable under Reverse Charge (RCM) by AFRZEN PRIVATE LIMITED @5% on taxable value of Rs <span id="displayCreditTerms">22,000</span>/-.</li>
+                    </ol>
                 </div>
 
                 <!-- Bank Details & Signature -->
                 <div class="bank-section">
                     <div class="bank-details-box">
-                        <div class="section-title" style="margin-bottom: 15px;">Bank Details</div>
+                        <div class="section-title">Bank Details:</div>
                         <div class="bank-info-item">
-                            <span class="bank-info-label">Bank Name:</span> Axis Bank Ltd.
+                            <span class="bank-info-label">Bank Name -</span> Axis Bank Ltd.
                         </div>
                         <div class="bank-info-item">
-                            <span class="bank-info-label">Account Name:</span> Logpro Supply Chain Solutions Pvt. Ltd
+                            <span class="bank-info-label">Account Name -</span> Logpro Supply Chain Solutions Pvt. Ltd
                         </div>
                         <div class="bank-info-item">
-                            <span class="bank-info-label">Account No:</span> 924020023025269
+                            <span class="bank-info-label">Account No -</span> 924020023025269
                         </div>
                         <div class="bank-info-item">
-                            <span class="bank-info-label">IFSC Code:</span> UTIB0000131
+                            <span class="bank-info-label">IFSC Code -</span> UTIB0000131
                         </div>
                         <div class="bank-info-item">
-                            <span class="bank-info-label">Branch:</span> DLF Gurgaon, Haryana, Gurgaon - 122009
+                            <span class="bank-info-label">Branch -</span> DLF Gurgaon, Haryana, Gurgaon - 122009
                         </div>
                     </div>
 
                     <div class="signature-section">
                         <div class="signature-box">
+                            <div class="signature-text">Yours Faithfully</div>
                             <div class="signature-line"></div>
-                            <div class="signature-label">For Logpro Supply Chain Solutions Pvt. Ltd</div>
-                            <div class="signature-label" style="margin-top: 5px; font-size: 12px; color: #64748b;">Authorized Signatory</div>
+                            <div class="signature-label">For LogPro Supply Chain Solutions Pvt. Ltd</div>
+                            <div class="signature-label">Authorised Signatory</div>
                         </div>
                     </div>
                 </div>
