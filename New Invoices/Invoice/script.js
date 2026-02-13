@@ -1,4 +1,4 @@
-﻿
+
         let entryCounter = 0;
 
         // Number to words conversion
@@ -235,8 +235,7 @@
                 });
             });
             
-            // Initialize GST display
-            updateGSTDisplay();
+
             
             // Add first transport entry by default
             addTransportEntry();
@@ -263,6 +262,21 @@ document.getElementById('invoiceForm').addEventListener('submit', async function
         });
 
 // ========================================
+// PRINT FUNCTIONALITY
+// ========================================
+
+function printInvoice() {
+    // First generate/update the invoice to ensure latest data
+    generateInvoice();
+
+    // Small delay to ensure the invoice is fully rendered
+    setTimeout(() => {
+        window.print();
+    }, 100);
+}
+
+
+// ========================================
 // EMAIL FUNCTIONALITY
 // ========================================
 
@@ -285,11 +299,6 @@ function generateHTMLEmailTemplate(data) {
         totalDistance,
         notes,
         creditTerms,
-        grandTotal,
-        igstAmount,
-        cgstAmount,
-        sgstAmount,
-        grandTotalWithGST,
         amountInWords,
         gstType
     } = data;
@@ -449,7 +458,7 @@ ${transportDetails}
                                         <table role="presentation" style="width: 100%; border-collapse: collapse;">
                                             <tr>
                                                 <td style="font-size: 15px; color: #ffffff; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Total Amount:</td>
-                                                <td style="font-size: 18px; color: #ffffff; font-weight: 700; text-align: right;">₹${formatIndianNumber(grandTotal)}</td>
+
                                             </tr>
                                         </table>
                                     </td>
@@ -458,33 +467,7 @@ ${transportDetails}
                         </td>
                     </tr>
 
-                    <!-- GST Details -->
-                    <tr>
-                        <td style="padding: 15px 30px 0 30px;">
-                            <table role="presentation" style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-                                ${gstType === 'igst' ? `
-                                <tr style="background-color: #f8fafc;">
-                                    <td style="padding: 12px 20px; font-size: 13px; color: #475569; font-weight: 600; border-bottom: 1px solid #e2e8f0;">IGST @18%:</td>
-                                    <td style="padding: 12px 20px; font-size: 14px; color: #6b7280; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">₹${formatIndianNumber(igstAmount)}</td>
-                                </tr>
-                                ` : `
-                                <tr style="background-color: #f8fafc;">
-                                    <td style="padding: 12px 20px; font-size: 13px; color: #475569; font-weight: 600; border-bottom: 1px solid #e2e8f0;">CGST @9%:</td>
-                                    <td style="padding: 12px 20px; font-size: 14px; color: #6b7280; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">₹${formatIndianNumber(cgstAmount)}</td>
-                                </tr>
-                                <tr style="background-color: #f8fafc;">
-                                    <td style="padding: 12px 20px; font-size: 13px; color: #475569; font-weight: 600;">SGST @9%:</td>
-                                    <td style="padding: 12px 20px; font-size: 14px; color: #6b7280; font-weight: 600; text-align: right;">₹${formatIndianNumber(sgstAmount)}</td>
-                                </tr>
-                                `}
-                                <tr style="background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);">
-                                    <td style="padding: 20px 25px; font-size: 16px; color: #ffffff; font-weight: 700; text-transform: uppercase;">Grand Total (including GST):</td>
-                                    <td style="padding: 20px 25px; font-size: 28px; color: #ffffff; font-weight: 700; text-align: right;">₹${formatIndianNumber(grandTotalWithGST)}</td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-
+                   
                     <!-- Amount in Words -->
                     <tr>
                         <td style="padding: 15px 30px;">
@@ -673,18 +656,14 @@ Entry ${index + 1}:
         }
     });
 
-    // Calculate GST
-    let igstAmount = 0;
-    let cgstAmount = 0;
-    let sgstAmount = 0;
+    // Calculate GST amounts
     let grandTotalWithGST = grandTotal;
-
     if (gstType === 'igst') {
-        igstAmount = grandTotal * 0.18;
+        const igstAmount = grandTotal * 0.18;
         grandTotalWithGST = grandTotal + igstAmount;
     } else {
-        cgstAmount = grandTotal * 0.09;
-        sgstAmount = grandTotal * 0.09;
+        const cgstAmount = grandTotal * 0.09;
+        const sgstAmount = grandTotal * 0.09;
         grandTotalWithGST = grandTotal + cgstAmount + sgstAmount;
     }
 
@@ -709,11 +688,6 @@ Entry ${index + 1}:
         totalDistance,
         notes,
         creditTerms,
-        grandTotal,
-        igstAmount,
-        cgstAmount,
-        sgstAmount,
-        grandTotalWithGST,
         amountInWords: numberToWords(Math.floor(grandTotalWithGST)),
         gstType
     });
@@ -792,10 +766,11 @@ Entry ${index + 1}:
             csvRows.push(['-----------------------------------------------------------------------']);
             csvRows.push(['|', 'INVOICE DETAILS', '', '', '', '']);
             csvRows.push(['-----------------------------------------------------------------------']);
+            const csvDocketNumber = invoiceData.docketNumber || invoiceData.transports?.[0]?.docket || 'N/A';
             csvRows.push(['|', 'Invoice Type:', invoiceData.invoiceType + ' INVOICE']);
             csvRows.push(['|', 'Invoice Number:', invoiceData.invoiceNumber]);
             csvRows.push(['|', 'Invoice Date:', formatDateForCSV(invoiceData.invoiceDate)]);
-            csvRows.push(['|', 'Docket Number:', invoiceData.docketNumber]);
+            csvRows.push(['|', 'Docket Number:', csvDocketNumber]);
             csvRows.push(['|', 'Ref PO Number:', invoiceData.refPoNo || 'N/A']);
             csvRows.push(['-----------------------------------------------------------------------']);
             csvRows.push([]);
@@ -847,37 +822,39 @@ Entry ${index + 1}:
             csvRows.push(['=======================================================================']);
             csvRows.push([]);
             
-            // Determine which charge columns to include
+            // Determine which charge columns to include (use parseFloat to avoid string "0" being truthy)
             const chargeColumns = [];
             const hasAnyCharges = invoiceData.transports.some(t => 
-                t.loadingCharges || t.unionCharges || t.sltCharges || 
-                t.detentionCharges || t.labourCharges || t.overloadCharges || 
-                t.odcCharges || t.haltingCharges || t.unloadingCharges
+                parseFloat(t.loadingCharges) > 0 || parseFloat(t.unionCharges) > 0 || parseFloat(t.sltCharges) > 0 || 
+                parseFloat(t.detentionCharges) > 0 || parseFloat(t.labourCharges) > 0 || parseFloat(t.overloadCharges) > 0 || 
+                parseFloat(t.odcCharges) > 0 || parseFloat(t.haltingCharges) > 0 || parseFloat(t.unloadingCharges) > 0
             );
             
             if (hasAnyCharges) {
-                if (invoiceData.transports.some(t => t.loadingCharges > 0)) chargeColumns.push('Loading');
-                if (invoiceData.transports.some(t => t.unionCharges > 0)) chargeColumns.push('Union');
-                if (invoiceData.transports.some(t => t.sltCharges > 0)) chargeColumns.push('SLT');
-                if (invoiceData.transports.some(t => t.detentionCharges > 0)) chargeColumns.push('Detention');
-                if (invoiceData.transports.some(t => t.labourCharges > 0)) chargeColumns.push('Labour');
-                if (invoiceData.transports.some(t => t.overloadCharges > 0)) chargeColumns.push('Overload');
-                if (invoiceData.transports.some(t => t.odcCharges > 0)) chargeColumns.push('ODC');
-                if (invoiceData.transports.some(t => t.haltingCharges > 0)) chargeColumns.push('Halting');
-                if (invoiceData.transports.some(t => t.unloadingCharges > 0)) chargeColumns.push('Unloading');
+                if (invoiceData.transports.some(t => parseFloat(t.loadingCharges) > 0)) chargeColumns.push('Loading');
+                if (invoiceData.transports.some(t => parseFloat(t.unionCharges) > 0)) chargeColumns.push('Union');
+                if (invoiceData.transports.some(t => parseFloat(t.sltCharges) > 0)) chargeColumns.push('SLT');
+                if (invoiceData.transports.some(t => parseFloat(t.detentionCharges) > 0)) chargeColumns.push('Detention');
+                if (invoiceData.transports.some(t => parseFloat(t.labourCharges) > 0)) chargeColumns.push('Labour');
+                if (invoiceData.transports.some(t => parseFloat(t.overloadCharges) > 0)) chargeColumns.push('Overload');
+                if (invoiceData.transports.some(t => parseFloat(t.odcCharges) > 0)) chargeColumns.push('ODC');
+                if (invoiceData.transports.some(t => parseFloat(t.haltingCharges) > 0)) chargeColumns.push('Halting');
+                if (invoiceData.transports.some(t => parseFloat(t.unloadingCharges) > 0)) chargeColumns.push('Unloading');
             }
             
-            // Transportation table headers with better formatting
+            // Transportation table headers (match invoice: Other Charges or charge columns, Total Taxable Value)
             const transportHeaders = [
-                '#', 'Date', 'Docket', 'From', 'To', 'Mode', 
-                'Vehicle Type', 'Weight (Kg)', 'Vehicle No', 'Freight (Rs.)'
+                'Description', '#', 'Date', 'Docket', 'From', 'To', 'Mode', 
+                'Vehicle Type', 'Weight (Kg)', 'Vehicle No'
             ];
             
             if (chargeColumns.length > 0) {
                 chargeColumns.forEach(charge => transportHeaders.push(charge + ' (Rs.)'));
+            } else {
+                transportHeaders.push('Other Charges');
             }
             
-            transportHeaders.push('Total (Rs.)');
+            transportHeaders.push('Total Taxable Value');
             csvRows.push(transportHeaders);
             
             // Separator line
@@ -885,10 +862,12 @@ Entry ${index + 1}:
             
             // Transportation entries
             let grandTotal = 0;
+            const transportCount = invoiceData.transports.length;
             invoiceData.transports.forEach((transport, index) => {
                 let lineTotal = parseFloat(transport.freight) || 0;
-                
+                const description = transportCount > 1 ? `Transportation Charges #${index + 1}` : 'Transportation Charges';
                 const row = [
+                    description,
                     index + 1,
                     formatDateForCSV(transport.date),
                     transport.docket,
@@ -897,11 +876,10 @@ Entry ${index + 1}:
                     transport.mode,
                     transport.vehicleType,
                     formatIndianNumber(parseFloat(transport.weight)),
-                    transport.vehicle,
-                    formatIndianNumber(parseFloat(transport.freight))
+                    transport.vehicle
                 ];
                 
-                // Add charge values if columns exist
+                // Add Other Charges or charge values (invoice does not show Freight separately - it's in Total Taxable Value)
                 if (hasAnyCharges) {
                     const chargeMap = {
                         'Loading': transport.loadingCharges,
@@ -920,6 +898,8 @@ Entry ${index + 1}:
                         row.push(val > 0 ? formatIndianNumber(val) : '-');
                         lineTotal += val;
                     });
+                } else {
+                    row.push('-');
                 }
                 
                 row.push(formatIndianNumber(lineTotal));
@@ -932,7 +912,7 @@ Entry ${index + 1}:
             
             // Grand total row
             const totalRow = new Array(transportHeaders.length).fill('');
-            totalRow[totalRow.length - 2] = 'GRAND TOTAL:';
+            totalRow[totalRow.length - 2] = 'TOTAL:';
             totalRow[totalRow.length - 1] = 'Rs. ' + formatIndianNumber(grandTotal);
             csvRows.push(totalRow);
             
@@ -946,20 +926,15 @@ Entry ${index + 1}:
             csvRows.push(['', 'PAYMENT SUMMARY', '', '', '', '']);
             csvRows.push(['=======================================================================']);
             csvRows.push([]);
-            csvRows.push(['Total Amount:', 'Rs. ' + formatIndianNumber(invoiceData.totalAmount), '', '', '', '(INR)']);
+            csvRows.push(['Total Amount:', 'Rs. ' + formatIndianNumber(invoiceData.totalAmount)]);
+            csvRows.push([]);
+            const csvTotal = invoiceData.grandTotalWithGST ?? invoiceData.totalAmount;
+            csvRows.push(['Amount in Words:', numberToWords(Math.floor(csvTotal))]);
             csvRows.push([]);
             csvRows.push(['Credit Terms:', invoiceData.creditTerms + ' Days']);
             csvRows.push([]);
             
-            // GST Details based on selected GST type
-            if (invoiceData.gstType === 'igst') {
-                csvRows.push(['IGST @18%:', 'Rs. ' + formatIndianNumber(invoiceData.igstAmount)]);
-            } else {
-                csvRows.push(['CGST @9%:', 'Rs. ' + formatIndianNumber(invoiceData.cgstAmount)]);
-                csvRows.push(['SGST @9%:', 'Rs. ' + formatIndianNumber(invoiceData.sgstAmount)]);
-            }
-            csvRows.push(['Grand Total (with GST):', 'Rs. ' + formatIndianNumber(invoiceData.grandTotalWithGST)]);
-            csvRows.push(['Amount in Words:', numberToWords(Math.floor(invoiceData.grandTotalWithGST))]);
+           
             csvRows.push([]);
             csvRows.push(['=======================================================================']);
             csvRows.push(['', 'Thank you for your business!', '', '', '', '']);
@@ -1014,25 +989,7 @@ Entry ${index + 1}:
             alert(`âœ… Invoice CSV downloaded successfully!\n\nFilename: ${filename}`);
         }
 
-        // Update GST Display based on selected GST type
-        function updateGSTDisplay() {
-            const gstType = document.querySelector('input[name="gstType"]:checked').value;
-            const igstRow = document.querySelector('.gst-row:nth-child(1)');
-            const cgstRow = document.querySelector('.gst-row:nth-child(2)');
-            const sgstRow = document.querySelector('.gst-row:nth-child(3)');
-            
-            if (gstType === 'igst') {
-                // Show only IGST
-                igstRow.style.display = 'flex';
-                cgstRow.style.display = 'none';
-                sgstRow.style.display = 'none';
-            } else {
-                // Show CGST and SGST, hide IGST
-                igstRow.style.display = 'none';
-                cgstRow.style.display = 'flex';
-                sgstRow.style.display = 'flex';
-            }
-        }
+
 
         function generateInvoice() {
             console.log('generateInvoice() called');
@@ -1040,7 +997,7 @@ Entry ${index + 1}:
             // Get form values
             const invoiceNumber = document.getElementById('invoiceNumber').value;
             const invoiceDate = document.getElementById('invoiceDate').value;
-            const docketNumber = document.getElementById('docketNumber').value;
+            const docketNumber = document.getElementById('docketNumber')?.value || '';
             const refPoNo = document.getElementById('refPoNo').value;
             
             const clientName = document.getElementById('clientName').value;
@@ -1059,7 +1016,8 @@ Entry ${index + 1}:
             document.getElementById('displayInvoiceNumber2').textContent = invoiceNumber;
             document.getElementById('displayInvoiceDate').textContent = formatDate(invoiceDate);
             document.getElementById('displayRefPoNo').textContent = refPoNo.trim() !== '' ? refPoNo : 'NA';
-            document.getElementById('displayDocketNumber').textContent = docketNumber;
+            // displayDocketNumber removed - now shown in table column
+
             
             document.getElementById('displayClientName').textContent = clientName;
             document.getElementById('displayClientAddress').textContent = clientAddress;
@@ -1179,31 +1137,15 @@ Entry ${index + 1}:
                     activeChargeColumns.push(chargeName);
                 }
             });
-            
-            // Get GST type for calculations (default to IGST if not found)
-            const gstTypeElement = document.querySelector('input[name="gstType"]:checked');
-            const gstType = gstTypeElement ? gstTypeElement.value : 'igst';
-            
-            // Calculate GST totals (not per-line, just overall)
-            let totalIGST = 0;
-            let totalCGST = 0;
-            let totalSGST = 0;
-            let grandTotalWithGST = 0;
-            
-            if (gstType === 'igst') {
-                totalIGST = grandTotal * 0.18;
-                grandTotalWithGST = grandTotal + totalIGST;
-            } else {
-                totalCGST = grandTotal * 0.09;
-                totalSGST = grandTotal * 0.09;
-                grandTotalWithGST = grandTotal + totalCGST + totalSGST;
-            }
+
+
             
             // Update table header dynamically (no GST columns)
             const table = document.querySelector('.transport-table');
             const thead = table.querySelector('thead');
             let headerHTML = '<tr>';
             headerHTML += '<th>Description</th>';
+            headerHTML += '<th>Docket No</th>';
             headerHTML += '<th>Date</th>';
             headerHTML += '<th>From</th>';
             headerHTML += '<th>To</th>';
@@ -1230,6 +1172,7 @@ Entry ${index + 1}:
             entryData.forEach((data, index) => {
                 let row = '<tr>';
                 row += `<td>Transportation Charges ${entries.length > 1 ? '#' + (index + 1) : ''}</td>`;
+                row += `<td>${data.docketNumber}</td>`;
                 row += `<td>${formatDate(data.transportDate)}</td>`;
                 row += `<td>${data.fromLocation}</td>`;
                 row += `<td>${data.toLocation}</td>`;
@@ -1261,7 +1204,7 @@ Entry ${index + 1}:
             let footerHTML = '';
             
             // Calculate the number of columns for proper colspan
-            let totalColumns = 9; // base columns
+            let totalColumns = 10; // base columns (added Docket No column)
             if (activeChargeColumns.length > 0) {
                 totalColumns += activeChargeColumns.length;
             }
@@ -1269,7 +1212,7 @@ Entry ${index + 1}:
             // Single Total row (with GST included)
             footerHTML += '<tr class="total-row">';
             const chargeColspan = activeChargeColumns.length > 0 ? activeChargeColumns.length : 1;
-            footerHTML += `<td colspan="${8 + chargeColspan}" style="text-align: right; font-weight: bold; padding: 8px;">Total</td>`;
+            footerHTML += `<td colspan="${9 + chargeColspan}" style="text-align: right; font-weight: bold; padding: 8px;">Total</td>`;
             footerHTML += `<td class="amount-cell" style="font-weight: bold; padding: 8px;" id="displayTotalAmount">${formatIndianNumber(grandTotal)}</td>`;
             footerHTML += '</tr>';
             
@@ -1296,26 +1239,26 @@ Entry ${index + 1}:
             } else {
                 notesSection.style.display = 'none';
             }
+
             
-            // Note: GST is now calculated in the table generation above
-            // Update GST displays in the summary section below the table
-            document.getElementById('displayIGST').textContent = formatIndianNumber(totalIGST);
-            document.getElementById('displayCGST').textContent = formatIndianNumber(totalCGST);
-            document.getElementById('displaySGST').textContent = formatIndianNumber(totalSGST);
-            document.getElementById('displayGrandTotal').textContent = formatIndianNumber(grandTotalWithGST);
-            
-            const amountInWords = numberToWords(Math.floor(grandTotalWithGST));
+            // Update amount in words based on the Total (without GST)
+            const amountInWords = numberToWords(Math.floor(grandTotal));
             document.getElementById('displayAmountWords').textContent = amountInWords;
             
-            // Update Credit Terms
-            document.getElementById('displayCreditTerms').textContent = creditTerms;
 
+            // Update Payment Terms - Credit Days and 5% GST RCM value
+            document.getElementById('displayCreditDays').textContent = creditTerms || '15';
+            document.getElementById('displayRCMClientName').textContent = clientName;
+            const gstRCMValue = grandTotal * 0.05; // 5% of taxable value
+            document.getElementById('displayCreditTerms').textContent = formatIndianNumber(gstRCMValue);
+
+            const firstDocket = entries.length > 0 ? (entries[0].querySelector('.docket-number')?.value || '') : '';
             const invoicePayload = {
                 timestamp: new Date().toISOString(), 
                 invoiceType,
                 invoiceNumber,
                 invoiceDate,
-                docketNumber,
+                docketNumber: docketNumber || firstDocket || 'N/A',
                 refPoNo,
                 clientName,
                 clientAddress,
@@ -1328,11 +1271,7 @@ Entry ${index + 1}:
                 notes,
                 creditTerms,
                 totalAmount: grandTotal,
-                gstType: gstType,
-                igstAmount: igstAmount,
-                cgstAmount: cgstAmount,
-                sgstAmount: sgstAmount,
-                grandTotalWithGST: grandTotalWithGST,
+                grandTotalWithGST: grandTotal,
                 transports: [...entries].map(entry => {
                     const chargesEnabled = entry.querySelector('.charges-checkbox')?.checked;
                     const transportData = {

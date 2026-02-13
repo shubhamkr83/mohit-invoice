@@ -40,15 +40,9 @@
                         <label>Invoice Number *</label>
                         <input type="text" id="invoiceNumber" required value="LPPL/25-26/0831">
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Invoice Date *</label>
-                            <input type="date" id="invoiceDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Docket Number *</label>
-                            <input type="text" id="docketNumber" required value="LP10297">
-                        </div>
+                    <div class="form-group">
+                        <label>Invoice Date *</label>
+                        <input type="date" id="invoiceDate" required>
                     </div>
                     <div class="form-group">
                         <label>Ref Po No</label>
@@ -135,7 +129,7 @@ Andheri West, Mumbai, Suburban, Maharashtra, 400053</textarea>
 
                 <!-- <button type="button" class="btn-preview" onclick="generateInvoice()">👁️ Generate Invoice Preview</button> -->
                 <button type="submit" class="btn-generate">📥 Download CSV and Send Email</button>
-                <button type="button" class="btn-print" onclick="window.print()">🖨️ Print Invoice</button>
+                <button type="button" class="btn-print" onclick="printInvoice()">🖨️ Print Invoice</button>
             </form>
         </div>
 
@@ -171,8 +165,7 @@ Andheri West, Mumbai, Suburban, Maharashtra, 400053</textarea>
                             <td colspan="3"><span class="meta-label">INVOICE DATE :</span> <span id="displayInvoiceDate">31-Jan-26</span></td>
                         </tr>
                         <tr>
-                            <td><span class="meta-label">REF PO NO :</span> <span id="displayRefPoNo">NA</span></td>
-                            <td colspan="2"><span class="meta-label">DOCKET NO :</span> <span id="displayDocketNumber">LP10297</span></td>
+                            <td colspan="3"><span class="meta-label">REF PO NO :</span> <span id="displayRefPoNo">NA</span></td>
                         </tr>
                     </table>
                 </div>
@@ -197,6 +190,7 @@ Haryana, Pin - 122003</div>
                         <thead>
                             <tr>
                                 <th>Description</th>
+                                <th>Docket No</th>
                                 <th>Date</th>
                                 <th>From</th>
                                 <th>To</th>
@@ -213,7 +207,7 @@ Haryana, Pin - 122003</div>
                         </tbody>
                         <tfoot>
                             <tr class="total-row">
-                                <td colspan="8" style="text-align: right; font-weight: bold; padding: 8px;">Total</td>
+                                <td colspan="9" style="text-align: right; font-weight: bold; padding: 8px;">Total</td>
                                 <td class="amount-cell" style="font-weight: bold; padding: 8px;" id="totalCharges">-</td>
                                 <td class="amount-cell" style="font-weight: bold; padding: 8px;" id="displayTotalAmount">0.00</td>
                             </tr>
@@ -244,7 +238,7 @@ Haryana, Pin - 122003</div>
                 </div>
 
                 <div class="amount-words">
-                    Amount in words- <span id="displayAmountWords">Four Lakh Forty Thousand Only</span>
+                    Amount in words- <span id="displayAmountWords"></span>
                 </div>
 
                 <!-- Payment Terms -->
@@ -252,8 +246,10 @@ Haryana, Pin - 122003</div>
                     <div class="section-title">PAYMENT TERMS</div>
                     <ol>
                         <li>Payment should be made by RTGS/NEFT or Cheque Only.</li>
-                        <li>If Payment not received within 15 days, interest @ 24% P.A. will be charged.</li>
-                        <li>GST payable under Reverse Charge (RCM) by AFRZEN PRIVATE LIMITED @5% on taxable value of Rs <span id="displayCreditTerms">22,000</span>/-.</li>
+                        <li>If Payment not received within <span id="displayCreditDays"></span> days, interest @ 24% P.A. will be charged.
+                        </li>
+                        <li>GST payable under Reverse Charge (RCM) by <span id="displayRCMClientName"></span> @5% on taxable value of Rs <span
+                                id="displayCreditTerms"></span>/-.</li>
                     </ol>
                 </div>
 
