@@ -1,291 +1,457 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Invoice Generator - Logpro Supply Chain Solutions</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div class="main-container">
-        <!-- Data Entry Form -->
-        <div class="form-container">
-            <div class="form-header">
-                <h2>📋 Invoice Data Entry</h2>
-                <p>Fill in the details to generate your invoice</p>
-            </div>
-
-            <form id="invoiceForm">
-                <!-- Invoice Type Selection -->
-                <div class="form-section">
-                    <div class="form-section-title">Invoice Type</div>
-                    <div class="form-group">
-                        <div style="display: flex; gap: 30px; align-items: center;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
-                                <input type="radio" name="invoiceType" id="invoiceTypeTax" value="TAX" checked style="width: auto; margin: 0; cursor: pointer;">
-                                <span>TAX INVOICE</span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
-                                <input type="radio" name="invoiceType" id="invoiceTypeExempted" value="EXEMPTED" style="width: auto; margin: 0; cursor: pointer;">
-                                <span>EXEMPTED INVOICE</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Invoice Details -->
-                <div class="form-section">
-                    <div class="form-section-title">Invoice Information</div>
-                    <div class="form-group">
-                        <label>Invoice Number *</label>
-                        <input type="text" id="invoiceNumber" required value="LPPL/25-26/0831">
-                    </div>
-                    <div class="form-group">
-                        <label>Invoice Date *</label>
-                        <input type="date" id="invoiceDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Ref Po No</label>
-                        <input type="text" id="refPoNo" value="">
-                    </div>
-                </div>
-
-                <!-- Client Details -->
-                <div class="form-section">
-                    <div class="form-section-title">Bill To (Client Details)</div>
-                    <div class="form-group">
-                        <label>Client Name *</label>
-                        <input type="text" id="clientName" required value="INSTALLCO WIFY TECHNOLOGY PRIVATE LIMITED" style="text-transform: uppercase;">
-                    </div>
-                    <div class="form-group">
-                        <label>Client Address *</label>
-                        <textarea id="clientAddress" required>7th Floor, D-704 and R-702, Remi Bizcourt,
-Veera Desai Road, Off New Link Road,
-Andheri West, Mumbai, Suburban, Maharashtra, 400053</textarea>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>State Code *</label>
-                            <input type="text" id="clientStateCode" required value="27">
-                        </div>
-                        <div class="form-group">
-                            <label>State Name *</label>
-                            <input type="text" id="clientStateName" required value="Maharashtra">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>GST IN Number *</label>
-                        <input type="text" id="clientGST" required value="27AAFCI3119N1ZC">
-                    </div>
-                </div>
-
-                <!-- Transportation Entries -->
-                <div class="form-section">
-                    <div class="form-section-title">
-                        <span>Transportation Details</span>
-                    </div>
-                    <div id="transportEntriesContainer">
-                        <!-- Transport entries will be added here dynamically -->
-                    </div>
-                    <button type="button" class="btn-add-entry" onclick="addTransportEntry()">
-                       ➕ Add Transportation Entry
-                    </button>
-                </div>
-
-                <!-- Distance Details -->
-                <div class="form-section">
-                    <div class="form-section-title">Distance Details</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Opening KM *</label>
-                            <input type="number" id="openingKM" required value="14157" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label>Closing KM *</label>
-                            <input type="number" id="closingKM" required value="16344" step="0.01">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Notes -->
-                <div class="form-section">
-                    <div class="form-section-title">Notes</div>
-                    <div class="form-group">
-                        <label>Additional Notes (Optional)</label>
-                        <textarea id="notes" rows="3" placeholder="Enter any additional notes or remarks..."></textarea>
-                    </div>
-                </div>
-
-                <!-- Payment Details -->
-                <div class="form-section">
-                    <div class="form-section-title">Payment Details</div>
-                    <div class="form-group">
-                        <label>Credit Terms (Days) *</label>
-                        <input type="number" id="creditTerms" required value="15" min="0" step="1">
-                    </div>
-                </div>
-
-            
-
-                <!-- <button type="button" class="btn-preview" onclick="generateInvoice()">👁️ Generate Invoice Preview</button> -->
-                <button type="submit" class="btn-generate">📥 Download CSV and Send Email</button>
-                <button type="button" class="btn-print" onclick="printInvoice()">🖨️ Print Invoice</button>
-            </form>
+      <!-- Data Entry Form -->
+      <div class="form-container">
+        <div class="form-header">
+          <h2>📋 Invoice Data Entry</h2>
+          <p>Fill in the details to generate your invoice</p>
         </div>
 
-        <!-- Invoice Preview -->
-        <div class="invoice-preview">
-            <div class="invoice-container" id="invoiceContainer">
-                <!-- Header -->
-                <div class="invoice-header">
-                    <div class="invoice-title" id="displayInvoiceTitle">TAX INVOICE</div>
+        <form id="invoiceForm">
+          <!-- Invoice Type Selection -->
+          <div class="form-section">
+            <div class="form-section-title">Invoice Type</div>
+            <div class="form-group">
+              <div style="display: flex; gap: 30px; align-items: center">
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                  "
+                >
+                  <input
+                    type="radio"
+                    name="invoiceType"
+                    id="invoiceTypeTax"
+                    value="TAX"
+                    checked
+                    style="width: auto; margin: 0; cursor: pointer"
+                  />
+                  <span>TAX INVOICE</span>
+                </label>
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                  "
+                >
+                  <input
+                    type="radio"
+                    name="invoiceType"
+                    id="invoiceTypeExempted"
+                    value="EXEMPTED"
+                    style="width: auto; margin: 0; cursor: pointer"
+                  />
+                  <span>EXEMPTED INVOICE</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Invoice Details -->
+          <div class="form-section">
+            <div class="form-section-title">Invoice Information</div>
+            <div class="form-group">
+              <label>Invoice Number *</label>
+              <input
+                type="text"
+                id="invoiceNumber"
+                required
+                value="LPPL/25-26/0831"
+              />
+            </div>
+            <div class="form-group">
+              <label>Invoice Date *</label>
+              <input type="date" id="invoiceDate" required />
+            </div>
+            <div class="form-group">
+              <label>Ref Po No</label>
+              <input type="text" id="refPoNo" value="" />
+            </div>
+          </div>
+
+          <!-- Client Details -->
+          <div class="form-section">
+            <div class="form-section-title">Bill To (Client Details)</div>
+            <div class="form-group">
+              <label>Client Name *</label>
+              <input
+                type="text"
+                id="clientName"
+                required
+                value="INSTALLCO WIFY TECHNOLOGY PRIVATE LIMITED"
+                style="text-transform: uppercase"
+              />
+            </div>
+            <div class="form-group">
+              <label>Client Address *</label>
+              <textarea id="clientAddress" required>
+7th Floor, D-704 and R-702, Remi Bizcourt,
+Veera Desai Road, Off New Link Road,
+Andheri West, Mumbai, Suburban, Maharashtra, 400053</textarea
+              >
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>State Code *</label>
+                <input type="text" id="clientStateCode" required value="27" />
+              </div>
+              <div class="form-group">
+                <label>State Name *</label>
+                <input
+                  type="text"
+                  id="clientStateName"
+                  required
+                  value="Maharashtra"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>GST IN Number *</label>
+              <input
+                type="text"
+                id="clientGST"
+                required
+                value="27AAFCI3119N1ZC"
+              />
+            </div>
+          </div>
+
+          <!-- Transportation Entries -->
+          <div class="form-section">
+            <div class="form-section-title">
+              <span>Transportation Details</span>
+            </div>
+            <div id="transportEntriesContainer">
+              <!-- Transport entries will be added here dynamically -->
+            </div>
+            <button
+              type="button"
+              class="btn-add-entry"
+              onclick="addTransportEntry()"
+            >
+              ➕ Add Transportation Entry
+            </button>
+          </div>
+
+          <!-- Distance Details -->
+          <div class="form-section">
+            <div class="form-section-title">Distance Details</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Opening KM *</label>
+                <input
+                  type="number"
+                  id="openingKM"
+                  required
+                  value="14157"
+                  step="0.01"
+                />
+              </div>
+              <div class="form-group">
+                <label>Closing KM *</label>
+                <input
+                  type="number"
+                  id="closingKM"
+                  required
+                  value="16344"
+                  step="0.01"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="form-section">
+            <div class="form-section-title">Notes</div>
+            <div class="form-group">
+              <label>Additional Notes (Optional)</label>
+              <textarea
+                id="notes"
+                rows="3"
+                placeholder="Enter any additional notes or remarks..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Payment Details -->
+          <div class="form-section">
+            <div class="form-section-title">Payment Details</div>
+            <div class="form-group">
+              <label>Credit Terms (Days) *</label>
+              <input
+                type="number"
+                id="creditTerms"
+                required
+                value="15"
+                min="0"
+                step="1"
+              />
+            </div>
+          </div>
+
+          <!-- <button type="button" class="btn-preview" onclick="generateInvoice()">👁️ Generate Invoice Preview</button> -->
+          <button type="submit" class="btn-generate">
+            📥 Download CSV and Send Email
+          </button>
+          <button type="button" class="btn-print" onclick="printInvoice()">
+            🖨️ Print Invoice
+          </button>
+        </form>
+      </div>
+
+      <!-- Invoice Preview -->
+      <div class="invoice-preview">
+        <div class="invoice-container" id="invoiceContainer">
+          <!-- Header -->
+          <div class="invoice-header">
+            <div class="invoice-title" id="displayInvoiceTitle">
+              TAX INVOICE
+            </div>
+          </div>
+
+          <!-- Company Details -->
+          <div class="company-details">
+            <div class="company-name">
+              M/s. Logpro Supply Chain Solutions Pvt. Ltd.
+            </div>
+            <div class="company-address">
+              B-9, Sardar Nagar, GT Road, Delhi-110009 State Name: Delhi, State
+              Code- 07
+            </div>
+            <div class="company-sac">SAC Code - 996812</div>
+          </div>
+
+          <!-- Invoice Meta Info -->
+          <div class="invoice-meta">
+            <table class="meta-table">
+              <tr>
+                <td>
+                  <span class="meta-label">CIN No -</span>U63030DL2020PTC363325
+                </td>
+                <td><span class="meta-label">GSTIN:</span> 07AAECL2012L1ZQ</td>
+                <td><span class="meta-label">Pan No. :</span> AAECL2012L</td>
+              </tr>
+              <tr>
+                <td colspan="3">
+                  <span class="meta-label">INVOICE NUMBER -</span>
+                  <span id="displayInvoiceNumber2">LPPL/25-26/0831</span>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3">
+                  <span class="meta-label">INVOICE DATE :</span>
+                  <span id="displayInvoiceDate">31-Jan-26</span>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3">
+                  <span class="meta-label">REF PO NO :</span>
+                  <span id="displayRefPoNo">NA</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Bill To Section -->
+          <div class="bill-to-section">
+            <div class="section-title">Bill To,</div>
+            <div class="client-name" id="displayClientName">
+              AFRZEN PRIVATE LIMITED
+            </div>
+            <div class="client-info">
+              <div>
+                <span class="info-label"
+                  >Flat No.- 5, Building No- 32/302, GLOBAL BUSINESS
+                  SQUARE</span
+                >
+              </div>
+              <div class="client-address" id="displayClientAddress">
+                Sector 44 Road, Gurugram, Locality : Sector 44, Gurugram,
+                Haryana, Gurgaon - Gurugram Haryana, Pin - 122003
+              </div>
+              <div>
+                <span class="info-label">State:</span>
+                <span id="displayClientStateName">Haryana</span> (<span
+                  id="displayClientStateCode"
+                  >06</span
+                >)
+              </div>
+              <div>
+                <span class="info-label">GSTIN No:</span>
+                <span id="displayClientGST">06ABBCA2050B1ZM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transportation Details Table -->
+          <div class="transportation-section">
+            <table class="transport-table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Docket No</th>
+                  <th>Date</th>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Mode</th>
+                  <th>Vehicle Type</th>
+                  <th>Vehicle No</th>
+                  <th>Weight (Kg)</th>
+                  <th>Other Charges</th>
+                  <th>Total Taxable Value</th>
+                </tr>
+              </thead>
+              <tbody id="transportTableBody">
+                <!-- Transport rows will be added here dynamically -->
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td
+                    colspan="9"
+                    style="text-align: right; font-weight: bold; padding: 8px"
+                  >
+                    Total
+                  </td>
+                  <td
+                    class="amount-cell"
+                    style="font-weight: bold; padding: 8px"
+                    id="totalCharges"
+                  >
+                    -
+                  </td>
+                  <td
+                    class="amount-cell"
+                    style="font-weight: bold; padding: 8px"
+                    id="displayTotalAmount"
+                  >
+                    0.00
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <!-- Distance Summary Box -->
+            <div
+              class="distance-summary"
+              id="distanceSummarySection"
+              style="display: none"
+            >
+              <div class="distance-item">
+                <span class="distance-label">Opening KM:</span>
+                <span class="distance-value" id="displayOpeningKM"
+                  >0.00 KM</span
+                >
+              </div>
+              <div class="distance-item">
+                <span class="distance-label">Closing KM:</span>
+                <span class="distance-value" id="displayClosingKM"
+                  >0.00 KM</span
+                >
+              </div>
+              <div class="distance-item">
+                <span class="distance-label">Total Distance Cover:</span>
+                <span class="distance-value" id="displayTotalDistance"
+                  >0.00 KM</span
+                >
+              </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div
+              class="distance-summary"
+              id="notesSection"
+              style="display: none; padding: 8px 10px"
+            >
+              <span class="distance-label" style="margin-right: 5px"
+                >Notes:</span
+              >
+              <span
+                id="displayNotes"
+                style="
+                  font-size: 11px;
+                  color: #000000;
+                  line-height: 1;
+                  white-space: pre-wrap;
+                "
+              ></span>
+            </div>
+          </div>
+
+          <div class="amount-words">
+            Amount in words- <span id="displayAmountWords"></span>
+          </div>
+
+          <!-- Payment Terms -->
+          <div class="payment-terms">
+            <div class="section-title">PAYMENT TERMS</div>
+            <ol>
+              <li>Payment should be made by RTGS/NEFT or Cheque Only.</li>
+              <li>
+                If Payment not received within
+                <span id="displayCreditDays"></span> days, interest @ 24% P.A.
+                will be charged.
+              </li>
+              <li>
+                GST payable under Reverse Charge (RCM) by
+                <span id="displayRCMClientName"></span> @5% on taxable value of
+                Rs <span id="displayCreditTerms"></span>/-.
+              </li>
+            </ol>
+          </div>
+
+          <!-- Bank Details & Signature -->
+          <div class="bank-section">
+            <div class="bank-details-box">
+              <div class="section-title">Bank Details:</div>
+              <div class="bank-info-item">
+                <span class="bank-info-label">Bank Name -</span> Axis Bank Ltd.
+              </div>
+              <div class="bank-info-item">
+                <span class="bank-info-label">Account Name -</span> Logpro
+                Supply Chain Solutions Pvt. Ltd
+              </div>
+              <div class="bank-info-item">
+                <span class="bank-info-label">Account No -</span>
+                924020023025269
+              </div>
+              <div class="bank-info-item">
+                <span class="bank-info-label">IFSC Code -</span> UTIB0000131
+              </div>
+              <div class="bank-info-item">
+                <span class="bank-info-label">Branch -</span> DLF Gurgaon,
+                Haryana, Gurgaon - 122009
+              </div>
+            </div>
+
+            <div class="signature-section">
+              <div class="signature-box">
+                <div class="signature-text">Yours Faithfully</div>
+                <div class="signature-line"></div>
+                <div class="signature-label">
+                  For LogPro Supply Chain Solutions Pvt. Ltd
                 </div>
+                <div class="signature-label">Authorised Signatory</div>
+              </div>
+            </div>
+          </div>
 
-                <!-- Company Details -->
-                <div class="company-details">
-                    <div class="company-name">M/s. Logpro Supply Chain Solutions Pvt. Ltd.</div>
-                    <div class="company-address">
-                        B-9, Sardar Nagar, GT Road, Delhi-110009 State Name: Delhi, State Code- 07
-                    </div>
-                    <div class="company-sac">SAC Code - 996812</div>
-                </div>
-
-                <!-- Invoice Meta Info -->
-                <div class="invoice-meta">
-                    <table class="meta-table">
-                        <tr>
-                            <td><span class="meta-label">CIN No -</span>U63030DL2020PTC363325</td>
-                            <td><span class="meta-label">GSTIN:</span> 07AAECL2012L1ZQ</td>
-                            <td><span class="meta-label">Pan No. :</span> AAECL2012L</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3"><span class="meta-label">INVOICE NUMBER -</span> <span id="displayInvoiceNumber2">LPPL/25-26/0831</span></td>
-                        </tr>
-                        <tr>
-                            <td colspan="3"><span class="meta-label">INVOICE DATE :</span> <span id="displayInvoiceDate">31-Jan-26</span></td>
-                        </tr>
-                        <tr>
-                            <td colspan="3"><span class="meta-label">REF PO NO :</span> <span id="displayRefPoNo">NA</span></td>
-                        </tr>
-                    </table>
-                </div>
-
-                <!-- Bill To Section -->
-                <div class="bill-to-section">
-                    <div class="section-title">Bill To,</div>
-                    <div class="client-name" id="displayClientName">AFRZEN PRIVATE LIMITED</div>
-                    <div class="client-info">
-                        <div><span class="info-label">Flat No.- 5, Building No- 32/302, GLOBAL BUSINESS SQUARE</span></div>
-                        <div class="client-address" id="displayClientAddress">Sector 44 Road, Gurugram, Locality : Sector 44,
-Gurugram, Haryana, Gurgaon - Gurugram
-Haryana, Pin - 122003</div>
-                        <div><span class="info-label">State:</span> <span id="displayClientStateName">Haryana</span> (<span id="displayClientStateCode">06</span>)</div>
-                        <div><span class="info-label">GSTIN No:</span> <span id="displayClientGST">06ABBCA2050B1ZM</span></div>
-                    </div>
-                </div>
-
-                <!-- Transportation Details Table -->
-                <div class="transportation-section">
-                    <table class="transport-table">
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th>Docket No</th>
-                                <th>Date</th>
-                                <th>From</th>
-                                <th>To</th>
-                                <th>Mode</th>
-                                <th>Vehicle Type</th>
-                                <th>Vehicle No</th>
-                                <th>Weight (Kg)</th>
-                                <th>Other Charges</th>
-                                <th>Total Taxable Value</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transportTableBody">
-                            <!-- Transport rows will be added here dynamically -->
-                        </tbody>
-                        <tfoot>
-                            <tr class="total-row">
-                                <td colspan="9" style="text-align: right; font-weight: bold; padding: 8px;">Total</td>
-                                <td class="amount-cell" style="font-weight: bold; padding: 8px;" id="totalCharges">-</td>
-                                <td class="amount-cell" style="font-weight: bold; padding: 8px;" id="displayTotalAmount">0.00</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-
-                    <!-- Distance Summary Box -->
-                    <div class="distance-summary" id="distanceSummarySection" style="display: none;">
-                        <div class="distance-item">
-                            <span class="distance-label">Opening KM:</span>
-                            <span class="distance-value" id="displayOpeningKM">0.00 KM</span>
-                        </div>
-                        <div class="distance-item">
-                            <span class="distance-label">Closing KM:</span>
-                            <span class="distance-value" id="displayClosingKM">0.00 KM</span>
-                        </div>
-                        <div class="distance-item">
-                            <span class="distance-label">Total Distance Cover:</span>
-                            <span class="distance-value" id="displayTotalDistance">0.00 KM</span>
-                        </div>
-                    </div>
-
-                    <!-- Notes Section -->
-                    <div class="distance-summary" id="notesSection" style="display: none; padding: 8px 10px;">
-                        <span class="distance-label" style="margin-right: 5px;">Notes:</span>
-                        <span id="displayNotes" style="font-size: 11px; color: #000000; line-height: 1; white-space: pre-wrap;"></span>
-                    </div>
-                </div>
-
-                <div class="amount-words">
-                    Amount in words- <span id="displayAmountWords"></span>
-                </div>
-
-                <!-- Payment Terms -->
-                <div class="payment-terms">
-                    <div class="section-title">PAYMENT TERMS</div>
-                    <ol>
-                        <li>Payment should be made by RTGS/NEFT or Cheque Only.</li>
-                        <li>If Payment not received within <span id="displayCreditDays"></span> days, interest @ 24% P.A. will be charged.
-                        </li>
-                        <li>GST payable under Reverse Charge (RCM) by <span id="displayRCMClientName"></span> @5% on taxable value of Rs <span
-                                id="displayCreditTerms"></span>/-.</li>
-                    </ol>
-                </div>
-
-                <!-- Bank Details & Signature -->
-                <div class="bank-section">
-                    <div class="bank-details-box">
-                        <div class="section-title">Bank Details:</div>
-                        <div class="bank-info-item">
-                            <span class="bank-info-label">Bank Name -</span> Axis Bank Ltd.
-                        </div>
-                        <div class="bank-info-item">
-                            <span class="bank-info-label">Account Name -</span> Logpro Supply Chain Solutions Pvt. Ltd
-                        </div>
-                        <div class="bank-info-item">
-                            <span class="bank-info-label">Account No -</span> 924020023025269
-                        </div>
-                        <div class="bank-info-item">
-                            <span class="bank-info-label">IFSC Code -</span> UTIB0000131
-                        </div>
-                        <div class="bank-info-item">
-                            <span class="bank-info-label">Branch -</span> DLF Gurgaon, Haryana, Gurgaon - 122009
-                        </div>
-                    </div>
-
-                    <div class="signature-section">
-                        <div class="signature-box">
-                            <div class="signature-text">Yours Faithfully</div>
-                            <div class="signature-line"></div>
-                            <div class="signature-label">For LogPro Supply Chain Solutions Pvt. Ltd</div>
-                            <div class="signature-label">Authorised Signatory</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Footer -->
-                <!-- <div class="invoice-footer">
+          <!-- Footer -->
+          <!-- <div class="invoice-footer">
                     <div class="footer-section">
                         <h4>Corporate Office</h4>
                         <p>
@@ -308,11 +474,10 @@ Haryana, Pin - 122003</div>
                         </p>
                     </div>
                 </div> -->
-            </div>
         </div>
+      </div>
     </div>
 
-    
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
