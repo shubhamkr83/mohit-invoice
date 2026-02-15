@@ -1171,7 +1171,9 @@ function generateCSV(invoiceData) {
   csvRows.push;
   const csvTotal = invoiceData.grandTotalWithGST ?? invoiceData.totalAmount;
   csvRows.push(["Amount in Words:", numberToWords(Math.floor(csvTotal))]);
-  ["======================================================================="];
+  csvRows.push([
+    "=======================================================================",
+  ]);
 
   // ============================================================
   // PAYMENT SUMMARY
