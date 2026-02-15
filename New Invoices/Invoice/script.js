@@ -843,6 +843,16 @@ ${chargesLines}
   // Send email via backend API
   const API_URL = "https://invoice-email-backend.onrender.com/api/send-email";
 
+  // Wake up the backend server before sending email
+  const wakeUpBackend = async () => {
+    try {
+      await fetch("https://invoice-email-backend.onrender.com/ping");
+      console.log("Backend server awakened");
+    } catch (error) {
+      console.log("Backend wake-up failed, proceeding anyway:", error.message);
+    }
+  };
+
   // Show loading indicator
   const sendButton = document.querySelector(".btn-generate"); // Updated to use the main button
   const originalButtonText = sendButton.innerHTML;
@@ -852,6 +862,12 @@ ${chargesLines}
   sendButton.style.cursor = "not-allowed";
 
   try {
+    // Wake up the backend first
+    await wakeUpBackend();
+
+    // Wait a moment for the server to be ready
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
