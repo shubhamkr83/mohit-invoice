@@ -299,8 +299,11 @@ document
     // Generate invoice and get the data
     const invoiceData = generateInvoice();
 
-    // Download CSV
+    // 1. Download CSV
     downloadCSV(invoiceData);
+
+    // 2. Send Email
+    await sendEmailWithInvoice();
   });
 
 // Auto-update on input/change (change catches select, checkbox; input catches text fields)
@@ -323,6 +326,596 @@ function printInvoice() {
   setTimeout(() => {
     window.print();
   }, 100);
+}
+
+// ========================================
+// EMAIL FUNCTIONALITY
+// ========================================
+
+// Generate beautiful HTML email template
+function generateHTMLEmailTemplate(data) {
+  const {
+    clientName,
+    invoiceNumber,
+    invoiceDate,
+    invoiceType,
+    docketNumber,
+    refPoNo,
+    clientAddress,
+    clientStateName,
+    clientStateCode,
+    clientGST,
+    transportDetails,
+    openingKM,
+    closingKM,
+    totalDistance,
+    notes,
+    creditTerms,
+    amountInWords,
+    totalAmount,
+    gstType,
+  } = data;
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice ${invoiceNumber}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #334155;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f8fafc;">
+        <tr>
+            <td style="padding: 40px 20px;">
+                <!-- Main Container -->
+                <table role="presentation" style="max-width: 700px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #475569 0%, #64748b 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600; letter-spacing: 1px;">INVOICE</h1>
+                            <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 16px; opacity: 0.95;">Logpro Supply Chain Solutions Pvt. Ltd.</p>
+                            <div style="margin-top: 15px; background: rgba(255, 255, 255, 0.15); padding: 6px 12px; border-radius: 16px; display: inline-block;">
+                                <span style="color: #ffffff; font-size: 14px;">#${invoiceNumber}</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Greeting -->
+                    <tr>
+                        <td style="padding: 30px 30px 20px 30px;">
+                            <p style="margin: 0; font-size: 16px; color: #2c3e50;">Dear <strong>${clientName}</strong>,</p>
+                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #64748b; line-height: 1.6;">Please find below the invoice details for your reference:</p>
+                        </td>
+                    </tr>
+
+                    <!-- Invoice Details Section -->
+                    <tr>
+                        <td style="padding: 20px 30px 0 30px;">
+                            <h2 style="margin: 0 0 12px 0; font-size: 13px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; display: inline-block;">Invoice Details</h2>
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #64748b; width: 40%;">Invoice Type:</td>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">${invoiceType || "TAX INVOICE"}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Invoice Number:</td>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">${invoiceNumber}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Invoice Date:</td>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">${invoiceDate}</td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #64748b;">Reference PO No:</td>
+                                                <td style="padding: 8px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">${refPoNo || "N/A"}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Bill To Section -->
+                    <tr>
+                        <td style="padding: 20px 30px 0 30px;">
+                            <h2 style="margin: 0 0 12px 0; font-size: 13px; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #bfdbfe; padding-bottom: 6px; display: inline-block;">Bill To</h2>
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; overflow: hidden; border-left: 3px solid #3b82f6; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0 0 8px 0; font-size: 15px; color: #1f2937; font-weight: 600;">${clientName}</p>
+                                        <p style="margin: 0 0 8px 0; font-size: 13px; color: #475569; line-height: 1.6;">${clientAddress.replace(/\n/g, "<br>")}</p>
+                                        <p style="margin: 0 0 8px 0; font-size: 13px; color: #475569;">State: ${clientStateName} (${clientStateCode})</p>
+                                        <div style="margin-top: 12px; background: #f8fafc; padding: 6px 10px; border-radius: 4px; display: inline-block;">
+                                            <span style="font-size: 12px; color: #64748b;"><strong>GSTIN:</strong> ${clientGST}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Transportation Details -->
+                    <tr>
+                        <td style="padding: 20px 30px 0 30px;">
+                            <h2 style="margin: 0 0 12px 0; font-size: 13px; color: #059669; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #a7f3d0; padding-bottom: 6px; display: inline-block;">Transportation Details</h2>
+                            <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; font-size: 13px; color: #374151; line-height: 1.6; white-space: pre-line; border-left: 3px solid #10b981;">
+${transportDetails}
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Distance Details -->
+                    <tr>
+                        <td style="padding: 15px 30px 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff; border: 1px solid #dbeafe; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);">
+                                <tr>
+                                    <td style="padding: 15px 20px;">
+                                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="padding: 4px 0; font-size: 12px; color: #64748b; font-weight: 500; width: 33%; text-align: center;">
+                                                    Opening KM: <span style="font-size: 13px; color: #1f2937; font-weight: 600;">${openingKM}</span>
+                                                </td>
+                                                <td style="padding: 4px 0; font-size: 12px; color: #64748b; font-weight: 500; width: 33%; text-align: center;">
+                                                    Closing KM: <span style="font-size: 13px; color: #1f2937; font-weight: 600;">${closingKM}</span>
+                                                </td>
+                                                <td style="padding: 4px 0; font-size: 12px; color: #64748b; font-weight: 500; width: 33%; text-align: center;">
+                                                    Total: <span style="font-size: 13px; color: #1f2937; font-weight: 600;">${totalDistance} km</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    ${
+                      notes
+                        ? `
+                    <!-- Notes -->
+                    <tr>
+                        <td style="padding: 15px 30px 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #fffbeb; border-left: 3px solid #f59e0b; border-radius: 8px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);">
+                                <tr>
+                                    <td style="padding: 15px 20px;">
+                                        <p style="margin: 0 0 5px 0; font-size: 12px; color: #92400e; font-weight: 600; text-transform: uppercase;">Notes</p>
+                                        <p style="margin: 0; font-size: 13px; color: #78350f; line-height: 1.6;">${notes}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    `
+                        : ""
+                    }
+
+                    <!-- Financial Summary -->
+                    <tr>
+                        <td style="padding: 30px 30px 0 30px;">
+                            <h2 style="margin: 0 0 12px 0; font-size: 13px; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #ddd6fe; padding-bottom: 6px; display: inline-block;">Financial Summary</h2>
+                        </td>
+                    </tr>
+
+                    <!-- Total Amount -->
+                    <tr>
+                        <td style="padding: 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);">
+                                <tr>
+                                    <td style="padding: 20px 25px;">
+                                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="font-size: 15px; color: #ffffff; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Total Amount:</td>
+                                                <td style="font-size: 18px; color: #ffffff; font-weight: 700; text-align: right;">₹${totalAmount != null && totalAmount !== undefined ? formatIndianNumber(totalAmount) : "0.00"}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                   
+                    <!-- Amount in Words -->
+                    <tr>
+                        <td style="padding: 15px 30px;">
+                            <div style="text-align: center; padding: 12px 16px; background-color: #f8fafc; font-size: 12px; color: #64748b; font-style: italic; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                Amount in words: <strong style="color: #374151;">${amountInWords}</strong>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Payment Terms -->
+                    <tr>
+                        <td style="padding: 15px 30px 0 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #fef2f2; border-left: 3px solid #ef4444; border-radius: 8px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h2 style="margin: 0 0 10px 0; font-size: 13px; color: #dc2626; text-transform: uppercase; letter-spacing: 0.5px;">Payment Terms</h2>
+                                        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #475569; line-height: 2;">
+                                            <li>1. Payment should be made by RTGS/NEFT or Cheque Only.</li>
+                                            <li>2. If Payment not received within ${creditTerms} days, interest @ 24% P.A. will be charged.</li>
+                                            <li>3. GST payable under Reverse Charge (RCM) by ${clientName} @5% on taxable value of Rs ${formatIndianNumber(totalAmount * 0.05)}.</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Bank Details -->
+                    <tr>
+                        <td style="padding: 20px 30px 0 30px;">
+                            <h2 style="margin: 0 0 12px 0; font-size: 13px; color: #0891b2; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #cffafe; padding-bottom: 6px; display: inline-block;">Bank Details</h2>
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; border-left: 3px solid #0891b2; box-shadow: 0 2px 8px rgba(8, 145, 178, 0.1);">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #64748b; width: 35%;">Bank Name:</td>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">Axis Bank Ltd.</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Account Name:</td>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">Logpro Supply Chain Solutions Pvt. Ltd</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Account Number:</td>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">924020023025269</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #64748b;">IFSC Code:</td>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">UTIB0000131</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Branch:</td>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #2c3e50; font-weight: 600;">DLF Gurgaon, Haryana, Gurgaon - 122009</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Company Details -->
+                    <tr>
+                        <td style="padding: 20px 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f8fafc; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                                <tr>
+                                    <td style="padding: 20px; text-align: center;">
+                                        <p style="margin: 0 0 8px 0; font-size: 15px; color: #1f2937; font-weight: 600;">Logpro Supply Chain Solutions Pvt. Ltd.</p>
+                                        <p style="margin: 0 0 5px 0; font-size: 12px; color: #64748b;">B-9, Sardar Nagar, GT Road, Delhi-110009, State Code: 07</p>
+                                        <p style="margin: 0; font-size: 12px; color: #64748b;">GSTIN: 07AAECL2012L1ZO | PAN: DL2020PTC363325</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <div style="text-align: center; padding-top: 16px; border-top: 1px solid #e2e8f0; background-color: #f8fafc; border-radius: 6px; padding: 16px;">
+                                <p style="margin: 0 0 8px 0; font-size: 14px; color: #374151; font-weight: 500;">Thank you for your business!</p>
+                                <p style="margin: 0; font-size: 13px; color: #64748b;">Please let us know if you have any questions.</p>
+                                <p style="margin: 15px 0 0 0; font-size: 12px; color: #64748b; font-style: italic;">Authorized Signatory<br>Logpro Supply Chain Solutions Pvt. Ltd.</p>
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `.trim();
+}
+
+async function sendEmailWithInvoice() {
+  // Hardcoded recipient email
+  const recipientEmail = "mohit.logpro@gmail.com";
+
+  // Validate required form fields
+  const invoiceNumber = document.getElementById("invoiceNumber").value;
+  const clientName = document.getElementById("clientName").value;
+
+  if (!invoiceNumber || invoiceNumber.trim() === "") {
+    alert("❌ Please fill in the Invoice Number before sending email.");
+    return;
+  }
+
+  if (!clientName || clientName.trim() === "") {
+    alert("❌ Please fill in the Client Name before sending email.");
+    return;
+  }
+
+  // Get form data with null checks
+  const invoiceDate = document.getElementById("invoiceDate")?.value || "";
+  const invoiceType =
+    document.querySelector('input[name="invoiceType"]:checked')?.value || "";
+  const refPoNo = document.getElementById("refPoNo")?.value?.trim() || "";
+  const clientAddress = document.getElementById("clientAddress")?.value || "";
+  const clientStateCode =
+    document.getElementById("clientStateCode")?.value || "";
+  const clientStateName =
+    document.getElementById("clientStateName")?.value || "";
+  const clientGST = document.getElementById("clientGST")?.value || "";
+  const openingKM = document.getElementById("openingKM")?.value || "";
+  const closingKM = document.getElementById("closingKM")?.value || "";
+  const notes = document.getElementById("notes")?.value || "";
+  const creditTerms = document.getElementById("creditTerms")?.value || "";
+  const gstType =
+    document.querySelector('input[name="gstType"]:checked')?.value ||
+    "cgst_sgst";
+
+  // Calculate total distance from opening and closing KM
+  const openingKMNum = parseFloat(openingKM) || 0;
+  const closingKMNum = parseFloat(closingKM) || 0;
+  const totalDistance =
+    closingKMNum > openingKMNum
+      ? (closingKMNum - openingKMNum).toString()
+      : "0";
+
+  // Get transportation entries
+  const entries = document.querySelectorAll(".transport-entry");
+  const docketNumber =
+    entries.length > 0
+      ? entries[0].querySelector(".docket-number")?.value || ""
+      : "";
+  let transportDetails = "";
+
+  entries.forEach((entry, index) => {
+    const date = entry.querySelector(".transport-date")?.value || "";
+    const docket = entry.querySelector(".docket-number")?.value || "";
+    const from = entry.querySelector(".from-location")?.value || "";
+    const to = entry.querySelector(".to-location")?.value || "";
+    const mode = entry.querySelector(".transport-mode")?.value || "";
+    const vehicleType = entry.querySelector(".vehicle-type")?.value || "";
+    const weight = entry.querySelector(".weight")?.value || "";
+    const vehicle = entry.querySelector(".vehicle-number")?.value || "";
+    const freight =
+      parseFloat(entry.querySelector(".freight-amount")?.value) || 0;
+    const chargesEnabled = entry.querySelector(".charges-checkbox")?.checked;
+
+    const loading =
+      parseFloat(entry.querySelector(".charge-loading")?.value) || 0;
+    const union = parseFloat(entry.querySelector(".charge-union")?.value) || 0;
+    const slt = parseFloat(entry.querySelector(".charge-slt")?.value) || 0;
+    const detention =
+      parseFloat(entry.querySelector(".charge-detention")?.value) || 0;
+    const labour =
+      parseFloat(entry.querySelector(".charge-labour")?.value) || 0;
+    const overload =
+      parseFloat(entry.querySelector(".charge-overload")?.value) || 0;
+    const odc = parseFloat(entry.querySelector(".charge-odc")?.value) || 0;
+    const halting =
+      parseFloat(entry.querySelector(".charge-halting")?.value) || 0;
+    const unloading =
+      parseFloat(entry.querySelector(".charge-unloading")?.value) || 0;
+
+    let lineTotal = freight;
+    if (chargesEnabled) {
+      lineTotal +=
+        loading +
+        union +
+        slt +
+        detention +
+        labour +
+        overload +
+        odc +
+        halting +
+        unloading;
+    }
+
+    let chargesLines = "";
+    if (chargesEnabled) {
+      chargesLines = `• Transport Charges: ₹${formatIndianNumber(freight)}
+`;
+      const chargeItems = [
+        ["Loading Charges", loading],
+        ["Union Charges", union],
+        ["SLT Charges", slt],
+        ["Detention Charges", detention],
+        ["Labour Charges", labour],
+        ["Overload Charges", overload],
+        ["ODC Charges", odc],
+        ["Halting Charges", halting],
+        ["Unloading Charges", unloading],
+      ];
+      chargeItems.forEach(([label, val]) => {
+        if (val > 0)
+          chargesLines += `• ${label}: ₹${formatIndianNumber(val)}
+`;
+      });
+    }
+    chargesLines += `• Total Taxable Value: ₹${formatIndianNumber(lineTotal)}
+`;
+    if (!chargesEnabled) {
+      chargesLines = `• Total Taxable Value: ₹${formatIndianNumber(lineTotal)}
+`;
+    }
+
+    transportDetails += `
+Entry ${index + 1}:
+• Date: ${date}
+• Docket Number: ${docket}
+• Route: ${from} to ${to}
+• Transport Mode: ${mode}
+• Vehicle Type: ${vehicleType}
+• Weight: ${weight} Kg
+• Vehicle Number: ${vehicle}
+${chargesLines}
+`;
+  });
+
+  // Calculate totals
+  let grandTotal = 0;
+  entries.forEach((entry) => {
+    const freight =
+      parseFloat(entry.querySelector(".freight-amount")?.value) || 0;
+    const chargesEnabled = entry.querySelector(".charges-checkbox")?.checked;
+
+    if (chargesEnabled) {
+      const loading =
+        parseFloat(entry.querySelector(".charge-loading")?.value) || 0;
+      const union =
+        parseFloat(entry.querySelector(".charge-union")?.value) || 0;
+      const slt = parseFloat(entry.querySelector(".charge-slt")?.value) || 0;
+      const detention =
+        parseFloat(entry.querySelector(".charge-detention")?.value) || 0;
+      const labour =
+        parseFloat(entry.querySelector(".charge-labour")?.value) || 0;
+      const overload =
+        parseFloat(entry.querySelector(".charge-overload")?.value) || 0;
+      const odc = parseFloat(entry.querySelector(".charge-odc")?.value) || 0;
+      const halting =
+        parseFloat(entry.querySelector(".charge-halting")?.value) || 0;
+      const unloading =
+        parseFloat(entry.querySelector(".charge-unloading")?.value) || 0;
+
+      grandTotal +=
+        freight +
+        loading +
+        union +
+        slt +
+        detention +
+        labour +
+        overload +
+        odc +
+        halting +
+        unloading;
+    } else {
+      grandTotal += freight;
+    }
+  });
+
+  // Calculate GST amounts
+  let grandTotalWithGST = grandTotal;
+  if (gstType === "igst") {
+    const igstAmount = grandTotal * 0.18;
+    grandTotalWithGST = grandTotal + igstAmount;
+  } else {
+    const cgstAmount = grandTotal * 0.09;
+    const sgstAmount = grandTotal * 0.09;
+    grandTotalWithGST = grandTotal + cgstAmount + sgstAmount;
+  }
+
+  // Create email subject
+  const subject = `Invoice ${invoiceNumber} - Logpro Supply Chain Solutions - ${invoiceDate}`;
+
+  // Format date for email (e.g. 13-Feb-2026)
+  const formattedInvoiceDate = invoiceDate
+    ? formatDate(invoiceDate)
+    : invoiceDate;
+
+  // Generate HTML email body
+  const emailBodyHTML = generateHTMLEmailTemplate({
+    clientName,
+    invoiceNumber,
+    invoiceDate: formattedInvoiceDate,
+    invoiceType: invoiceType ? invoiceType + " INVOICE" : "TAX INVOICE",
+    docketNumber:
+      docketNumber || (entries.length > 0 ? "See entries below" : "N/A"),
+    refPoNo: refPoNo?.trim() ? refPoNo : "N/A",
+    clientAddress,
+    clientStateName,
+    clientStateCode,
+    clientGST,
+    transportDetails,
+    openingKM,
+    closingKM,
+    totalDistance,
+    notes,
+    creditTerms,
+    amountInWords: numberToWords(Math.floor(grandTotal)),
+    totalAmount: grandTotal,
+    gstType,
+  });
+
+  // Send email via backend API
+  const API_URL = "https://invoice-email-backend.onrender.com/api/send-email";
+
+  // Wake up the backend server before sending email
+  const wakeUpBackend = async () => {
+    try {
+      await fetch("https://invoice-email-backend.onrender.com/ping");
+      console.log("Backend server awakened");
+    } catch (error) {
+      console.log("Backend wake-up failed, proceeding anyway:", error.message);
+    }
+  };
+
+  // Show loading indicator
+  const sendButton = document.querySelector(".btn-generate"); // Updated to use the main button
+  const originalButtonText = sendButton.innerHTML;
+  sendButton.disabled = true;
+  sendButton.innerHTML = "📧 Sending CSV + Email...";
+  sendButton.style.opacity = "0.6";
+  sendButton.style.cursor = "not-allowed";
+
+  try {
+    // Wake up the backend first
+    await wakeUpBackend();
+
+    // Wait a moment for the server to be ready
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        recipientEmail: recipientEmail,
+        subject: subject,
+        emailBody: emailBodyHTML,
+        senderName: "Logpro Supply Chain Solutions Pvt. Ltd.",
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert(
+        `✅ Email sent successfully!\n\nRecipient: ${recipientEmail}\nSubject: ${subject}\n\nThe invoice has been delivered to the recipient's inbox.`,
+      );
+    } else {
+      throw new Error(result.error || "Failed to send email");
+    }
+  } catch (error) {
+    console.error("Error sending email:", error);
+
+    // Check if backend is running
+    if (
+      error.message.includes("Failed to fetch") ||
+      error.message.includes("NetworkError")
+    ) {
+      alert(
+        "❌ Cannot connect to email server!\n\nPlease ensure:\n1. Backend server is accessible at https://invoice-email-backend.onrender.com\n\nError: " +
+          error.message,
+      );
+    } else {
+      alert(
+        "❌ Failed to send email!\n\nError: " +
+          error.message +
+          "\n\nPlease try again or contact support.",
+      );
+    }
+  } finally {
+    // Restore button state
+    sendButton.disabled = false;
+    sendButton.innerHTML = originalButtonText;
+    sendButton.style.opacity = "1";
+    sendButton.style.cursor = "pointer";
+  }
 }
 
 // ========================================

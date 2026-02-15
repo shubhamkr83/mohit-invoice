@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -204,37 +204,11 @@ Andheri West, Mumbai, Suburban, Maharashtra, 400053</textarea
             </div>
           </div>
 
-          <!-- GST Details -->
-          <div class="form-section">
-            <div class="form-section-title">GST Details</div>
-            <div class="form-group">
-              <div class="radio-group">
-                <label class="radio-option">
-                  <input
-                    type="radio"
-                    name="gstType"
-                    value="igst"
-                    id="gstTypeIGST"
-                    checked
-                  />
-                  <span class="radio-label">IGST</span>
-                </label>
-                <label class="radio-option">
-                  <input
-                    type="radio"
-                    name="gstType"
-                    value="cgst-sgst"
-                    id="gstTypeCGSTSGST"
-                  />
-                  <span class="radio-label">CGST & SGST</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
           <!-- <button type="button" class="btn-preview" onclick="generateInvoice()">👁️ Generate Invoice Preview</button> -->
-          <button type="submit" class="btn-generate">📥 Download CSV</button>
-          <button type="button" class="btn-print" onclick="window.print()">
+          <button type="submit" class="btn-generate">
+            📥 Download CSV and Send Email
+          </button>
+          <button type="button" class="btn-print" onclick="printInvoice()">
             🖨️ Print Invoice
           </button>
         </form>
@@ -418,94 +392,6 @@ Andheri West, Mumbai, Suburban, Maharashtra, 400053</textarea
             </div>
           </div>
 
-          <!-- GST Calculation Section -->
-          <div
-            class="gst-section"
-            style="
-              max-width: 400px;
-              margin: 20px auto 0 auto;
-              background: #f8fafc;
-              border-radius: 8px;
-              padding: 20px;
-              border: 1px solid #e2e8f0;
-            "
-          >
-            <div
-              class="gst-row"
-              style="
-                display: flex;
-                justify-content: space-between;
-                padding: 10px 0;
-                border-bottom: 1px solid #e2e8f0;
-              "
-            >
-              <span style="color: #475569; font-size: 14px; font-weight: 500"
-                >IGST @18%:</span
-              >
-              <span style="color: #1e3c72; font-size: 14px; font-weight: 600"
-                >₹ <span id="displayIGST">0.00</span></span
-              >
-            </div>
-            <div
-              class="gst-row"
-              style="
-                display: none;
-                justify-content: space-between;
-                padding: 10px 0;
-                border-bottom: 1px solid #e2e8f0;
-              "
-            >
-              <span style="color: #475569; font-size: 14px; font-weight: 500"
-                >CGST @9%:</span
-              >
-              <span style="color: #1e3c72; font-size: 14px; font-weight: 600"
-                >₹ <span id="displayCGST">0.00</span></span
-              >
-            </div>
-            <div
-              class="gst-row"
-              style="
-                display: none;
-                justify-content: space-between;
-                padding: 10px 0;
-                border-bottom: 1px solid #e2e8f0;
-              "
-            >
-              <span style="color: #475569; font-size: 14px; font-weight: 500"
-                >SGST @9%:</span
-              >
-              <span style="color: #1e3c72; font-size: 14px; font-weight: 600"
-                >₹ <span id="displaySGST">0.00</span></span
-              >
-            </div>
-            <div
-              class="grand-total-row"
-              style="
-                display: flex;
-                justify-content: space-between;
-                padding: 15px 0;
-                margin-top: 10px;
-                background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-                margin: 10px -20px -20px -20px;
-                padding: 20px;
-                border-radius: 0 0 8px 8px;
-              "
-            >
-              <span
-                style="
-                  color: #ffffff;
-                  font-size: 16px;
-                  font-weight: 700;
-                  text-transform: uppercase;
-                "
-                >Grand Total:</span
-              >
-              <span style="color: #ffffff; font-size: 20px; font-weight: 700"
-                >₹ <span id="displayGrandTotal">0.00</span></span
-              >
-            </div>
-          </div>
-
           <div class="amount-words">
             Amount in words- <span id="displayAmountWords"></span>
           </div>
@@ -519,6 +405,11 @@ Andheri West, Mumbai, Suburban, Maharashtra, 400053</textarea
                 If Payment not received within
                 <span id="displayCreditDays"></span> days, interest @ 24% P.A.
                 will be charged.
+              </li>
+              <li>
+                GST payable under Reverse Charge (RCM) by
+                <span id="displayRCMClientName"></span> @5% on taxable value of
+                Rs <span id="displayCreditTerms"></span>/-.
               </li>
             </ol>
           </div>
