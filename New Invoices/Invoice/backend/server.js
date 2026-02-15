@@ -12,13 +12,21 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Create Gmail SMTP transporter
+// Create Gmail SMTP transporter with optimized settings
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_APP_PASSWORD,
   },
+  pool: true,
+  maxConnections: 1,
+  maxMessages: 5,
+  rateDelta: 1000,
+  rateLimit: 5,
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 5000, // 5 seconds
+  socketTimeout: 10000, // 10 seconds
 });
 
 // Verify SMTP connection on startup
@@ -83,16 +91,39 @@ app.post("/api/send-email", async (req, res) => {
       html: emailBody, // Now properly sends HTML content
     };
 
-    // Send email via Gmail SMTP with timeout
+    // Send email via Gmail SMTP with timeout and retry
     console.log(`📧 Sending email to: ${recipientEmail}`);
 
-    // Set timeout for email sending
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Email sending timeout")), 25000); // 25 second timeout
-    });
+    const sendEmailWithRetry = async (maxRetries = 3) => {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          // Set timeout for email sending
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error("Email sending timeout")), 20000); // 20 second timeout
+          });
 
-    const emailPromise = transporter.sendMail(mailOptions);
-    const info = await Promise.race([emailPromise, timeoutPromise]);
+          const emailPromise = transporter.sendMail(mailOptions);
+          const info = await Promise.race([emailPromise, timeoutPromise]);
+
+          console.log(`✅ Email sent successfully on attempt ${attempt}!`);
+          console.log(`📬 Message ID: ${info.messageId}`);
+          return info;
+        } catch (error) {
+          console.log(`❌ Attempt ${attempt} failed:`, error.message);
+
+          if (attempt === maxRetries) {
+            throw error;
+          }
+
+          // Wait before retrying (exponential backoff)
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+          console.log(`⏳ Retrying in ${delay}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    };
+
+    const info = await sendEmailWithRetry();
 
     console.log(`✅ Email sent successfully!`);
     console.log(`📬 Message ID: ${info.messageId}`);
