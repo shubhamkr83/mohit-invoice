@@ -841,7 +841,7 @@ ${chargesLines}
   });
 
   // Send email via backend API
-  const API_URL = "http://localhost:3001/api/send-email";
+  const API_URL = "https://invoice-email-backend.onrender.com/api/send-email";
 
   // Show loading indicator
   const sendButton = document.querySelector(".btn-generate"); // Updated to use the main button
@@ -883,7 +883,7 @@ ${chargesLines}
       error.message.includes("NetworkError")
     ) {
       alert(
-        "❌ Cannot connect to email server!\n\nPlease ensure:\n1. Backend server is running (npm start in backend folder)\n2. Server is accessible at http://localhost:3000\n\nError: " +
+        "❌ Cannot connect to email server!\n\nPlease ensure:\n1. Backend server is accessible at https://invoice-email-backend.onrender.com\n\nError: " +
           error.message,
       );
     } else {
